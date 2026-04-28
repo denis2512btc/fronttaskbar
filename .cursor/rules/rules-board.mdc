@@ -1,0 +1,74 @@
+---
+alwaysApply: true
+---
+
+---
+description: AI Task Board — Frontend rules
+globs: ["src/**/*"]
+alwaysApply: true
+---
+
+# Stack
+- React 18 + Vite, TypeScript strict
+- Tailwind CSS + shadcn/ui + Framer Motion + next-themes
+- Zustand + TanStack Query + @dnd-kit/core
+- React Hook Form + Zod
+- lucide-react
+- Supabase JS client (`@supabase/supabase-js`)
+
+# Structure
+```
+src/
+  app/
+    App.tsx
+    router.tsx
+    providers.tsx
+  pages/
+    auth/
+    dashboard/
+    board/
+    settings/
+  components/
+    ui/           # shadcn компоненты
+    layout/
+    shared/
+    sections/     # HeroSection, FeaturesSection, HowItWorks, PricingSection, Footer
+  features/
+    auth/         # components/ hooks/ api/ types.ts
+    boards/
+    columns/
+    tasks/
+    subtasks/
+    ai/
+    telegram/
+  lib/
+    supabase/
+      client.ts
+    api/
+      worker-client.ts
+    validations/
+    utils/
+  hooks/
+  stores/         # Zustand
+  types/
+  styles/
+    globals.css
+```
+
+# Rules
+- Компоненты только функциональные, тайпхинты на всех пропсах
+- Каждая фича изолирована в `features/` — свои components, hooks, api, types
+- Валидация форм через React Hook Form + Zod, не вручную
+- Mobile-first, breakpoints sm/md/lg
+- Только Tailwind-классы, никаких inline-стилей
+- Тема: indigo/violet/blue градиенты, `rounded-xl`, `shadow-sm`, `p-6+`
+- Тёмная/светлая тема только через `next-themes`
+- Секции лендинга — отдельные компоненты в `components/sections/`
+- Supabase только через типизированный клиент с `Database` типом
+
+# Forbidden
+- `any` без обоснования
+- Inline-стили в JSX
+- Логика фичи вне её папки в `features/`
+- Прямые fetch-запросы к Supabase в обход клиента
+```
