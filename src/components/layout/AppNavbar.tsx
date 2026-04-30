@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTheme } from 'next-themes'
-import { Moon, Sun, Zap, PanelLeftClose, PanelLeftOpen, Bell, Search, LogOut } from 'lucide-react'
+import { Moon, Sun, Zap, PanelLeftClose, PanelLeftOpen, Bell, LogOut } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { AuthDialog } from '@/features/auth/components/AuthDialog'
@@ -52,20 +52,8 @@ export function AppNavbar({ sidebarOpen, onToggleSidebar }: AppNavbarProps) {
           </Link>
         </div>
 
-        {/* Search */}
-        <div className="mx-4 flex flex-1 items-center">
-          <div className="relative hidden max-w-sm flex-1 sm:flex">
-            <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Поиск задач, досок..."
-              className="h-8 w-full rounded-lg border border-border bg-muted/40 pl-8 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-            />
-          </div>
-        </div>
-
         {/* Right controls */}
-        <div className="flex items-center gap-1.5">
+        <div className="ml-auto flex items-center gap-1.5">
           <button className="relative flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
             <Bell className="size-4" />
             <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-indigo-500" />
