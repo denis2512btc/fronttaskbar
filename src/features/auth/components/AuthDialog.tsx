@@ -89,8 +89,8 @@ export function AuthDialog({ open, defaultMode = 'signin', onOpenChange }: AuthD
           </DialogTitle>
           <DialogDescription>
             {mode === 'signin'
-              ? 'Sign in to your AITaskBoard account'
-              : 'Get started with AITaskBoard for free'}
+              ? 'Sign in to your AITaskboard account'
+              : 'Get started with AITaskboard for free'}
           </DialogDescription>
         </DialogHeader>
 

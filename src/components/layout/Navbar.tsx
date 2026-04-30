@@ -36,7 +36,7 @@ export function Navbar() {
             </span>
             <span className="text-[15px] font-semibold tracking-tight">
               <span className="text-indigo-600 dark:text-indigo-400">AI</span>
-              <span>TaskBoard</span>
+              <span>Taskboard</span>
             </span>
           </Link>
 

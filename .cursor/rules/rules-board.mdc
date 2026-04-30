@@ -3,7 +3,7 @@ alwaysApply: true
 ---
 
 ---
-description: AI Task Board — Frontend rules
+description: AITaskboard — Frontend rules
 globs: ["src/**/*"]
 alwaysApply: true
 ---
