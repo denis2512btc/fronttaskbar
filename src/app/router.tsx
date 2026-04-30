@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
+import { ProtectedRoute } from '@/features/auth/components/protected-route'
 import { AuthPage } from '@/pages/auth/AuthPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
 import { BoardPage } from '@/pages/board/BoardPage'
@@ -13,7 +14,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: <AppLayout />,
+    element: (
+      <ProtectedRoute>
+        <AppLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'board/:boardId', element: <BoardPage /> },
