@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Navigate, Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Navigate, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Zap, Loader2 } from 'lucide-react'
 import {
   Card,
@@ -15,15 +15,26 @@ import {
   EmailSignInForm,
   EmailSignUpForm,
 } from '@/features/auth/components/email-auth-forms'
+import { GoogleSignInSection } from '@/features/auth/components/google-sign-in-section'
 
 type Mode = 'signin' | 'signup'
 
 export function AuthPage() {
   const { user, loading } = useAuthSession()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [mode, setMode] = useState<Mode>('signin')
   const [apiError, setApiError] = useState<string | null>(null)
+  const [oauthError, setOauthError] = useState<string | null>(null)
   const [signUpNotice, setSignUpNotice] = useState<string | null>(null)
+
+  useEffect(() => {
+    const err = searchParams.get('error')
+    if (err) {
+      setOauthError(err)
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   if (loading) {
     return (
@@ -61,6 +72,7 @@ export function AuthPage() {
     setMode(next)
     setApiError(null)
     setSignUpNotice(null)
+    setOauthError(null)
   }
 
   return (
@@ -119,21 +131,33 @@ export function AuthPage() {
             </p>
           )}
 
-          {mode === 'signin' ? (
-            <EmailSignInForm
-              apiError={apiError}
-              setApiError={setApiError}
-              onSignInSuccess={() => navigate('/', { replace: true })}
-              switchToSignUp={() => switchMode('signup')}
-            />
-          ) : (
-            <EmailSignUpForm
-              apiError={apiError}
-              setApiError={setApiError}
-              onSignUpComplete={handleSignUpComplete}
-              switchToSignIn={() => switchMode('signin')}
-            />
+          {oauthError && (
+            <p className="mb-4 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              {oauthError}
+            </p>
           )}
+
+          <div className="flex flex-col gap-4">
+            <GoogleSignInSection
+              onOAuthError={setOauthError}
+              dividerBackgroundClass="bg-card"
+            />
+            {mode === 'signin' ? (
+              <EmailSignInForm
+                apiError={apiError}
+                setApiError={setApiError}
+                onSignInSuccess={() => navigate('/', { replace: true })}
+                switchToSignUp={() => switchMode('signup')}
+              />
+            ) : (
+              <EmailSignUpForm
+                apiError={apiError}
+                setApiError={setApiError}
+                onSignUpComplete={handleSignUpComplete}
+                switchToSignIn={() => switchMode('signin')}
+              />
+            )}
+          </div>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
             <Link

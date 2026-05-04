@@ -46,3 +46,19 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut()
   if (error) throw new Error(error.message)
 }
+
+/**
+ * Browser redirect OAuth. Configure Google in Supabase Dashboard → Authentication → Providers (Client ID + Secret from Google Cloud).
+ * In Google Cloud → OAuth client: add Authorized redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`.
+ * In Supabase → URL configuration: allow `${origin}/auth/callback` in Redirect URLs. No Google secrets in frontend `.env`.
+ */
+export async function signInWithGoogle() {
+  requireSupabaseConfigured()
+  const redirectTo = `${window.location.origin}/auth/callback`
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo },
+  })
+  if (error) throw new Error(error.message)
+  if (data.url) window.location.assign(data.url)
+}

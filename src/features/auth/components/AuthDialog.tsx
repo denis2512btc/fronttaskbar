@@ -8,6 +8,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { EmailSignInForm, EmailSignUpForm } from '@/features/auth/components/email-auth-forms'
+import { GoogleSignInSection } from '@/features/auth/components/google-sign-in-section'
 
 type Mode = 'signin' | 'signup'
 
@@ -21,12 +22,14 @@ export function AuthDialog({ open, defaultMode = 'signin', onOpenChange }: AuthD
   const [mode, setMode] = useState<Mode>(defaultMode)
   const [apiError, setApiError] = useState<string | null>(null)
   const [signUpNotice, setSignUpNotice] = useState<string | null>(null)
+  const [oauthError, setOauthError] = useState<string | null>(null)
 
   const handleOpenChange = (next: boolean) => {
     if (next) setMode(defaultMode)
     if (!next) {
       setApiError(null)
       setSignUpNotice(null)
+      setOauthError(null)
     }
     onOpenChange(next)
   }
@@ -54,43 +57,54 @@ export function AuthDialog({ open, defaultMode = 'signin', onOpenChange }: AuthD
           </p>
         )}
 
-        {mode === 'signin' ? (
-          <EmailSignInForm
-            apiError={apiError}
-            setApiError={setApiError}
-            onSignInSuccess={() => onOpenChange(false)}
-            switchToSignUp={() => {
-              setMode('signup')
-              setApiError(null)
-              setSignUpNotice(null)
-            }}
-          />
-        ) : (
-          <EmailSignUpForm
-            apiError={apiError}
-            setApiError={setApiError}
-            onSignUpComplete={(result) => {
-              if (result.session) {
+        {oauthError && (
+          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            {oauthError}
+          </p>
+        )}
+
+        <div className="flex flex-col gap-4">
+          <GoogleSignInSection onOAuthError={setOauthError} />
+          {mode === 'signin' ? (
+            <EmailSignInForm
+              apiError={apiError}
+              setApiError={setApiError}
+              onSignInSuccess={() => onOpenChange(false)}
+              switchToSignUp={() => {
+                setMode('signup')
+                setApiError(null)
+                setSignUpNotice(null)
+                setOauthError(null)
+              }}
+            />
+          ) : (
+            <EmailSignUpForm
+              apiError={apiError}
+              setApiError={setApiError}
+              onSignUpComplete={(result) => {
+                if (result.session) {
+                  setSignUpNotice(null)
+                  onOpenChange(false)
+                  return
+                }
+                if (result.needsEmailConfirmation) {
+                  setSignUpNotice(
+                    'Check your inbox and confirm your email to finish signing up. Then you can sign in.',
+                  )
+                  return
+                }
                 setSignUpNotice(null)
                 onOpenChange(false)
-                return
-              }
-              if (result.needsEmailConfirmation) {
-                setSignUpNotice(
-                  'Check your inbox and confirm your email to finish signing up. Then you can sign in.',
-                )
-                return
-              }
-              setSignUpNotice(null)
-              onOpenChange(false)
-            }}
-            switchToSignIn={() => {
-              setMode('signin')
-              setApiError(null)
-              setSignUpNotice(null)
-            }}
-          />
-        )}
+              }}
+              switchToSignIn={() => {
+                setMode('signin')
+                setApiError(null)
+                setSignUpNotice(null)
+                setOauthError(null)
+              }}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   )
