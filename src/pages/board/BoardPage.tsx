@@ -1,6 +1,9 @@
-import { Plus, MoreHorizontal, Zap, ChevronLeft } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Loader2, Plus, MoreHorizontal, Zap, ChevronLeft } from 'lucide-react'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { useAuthSession } from '@/features/auth/hooks/use-auth-session'
+import { useBoardQuery } from '@/features/boards/hooks/use-boards-queries'
+import { isSupabaseConfigured } from '@/lib/supabase/client'
 
 type Priority = 'low' | 'medium' | 'high' | 'urgent'
 
@@ -150,7 +153,7 @@ function TaskCard({ task }: { task: Task }) {
   )
 }
 
-export function BoardPage() {
+function BoardKanbanDemo({ boardTitle }: { boardTitle: string }) {
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Board header */}
@@ -164,7 +167,7 @@ export function BoardPage() {
             Доски
           </Link>
           <span className="text-muted-foreground/40">/</span>
-          <h1 className="text-sm font-semibold">Product Roadmap</h1>
+          <h1 className="text-sm font-semibold">{boardTitle}</h1>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex -space-x-1.5">
@@ -228,4 +231,43 @@ export function BoardPage() {
       </div>
     </div>
   )
+}
+
+export function BoardPage() {
+  const { boardId } = useParams<{ boardId: string }>()
+  const { user, loading } = useAuthSession()
+  const boardQuery = useBoardQuery(user?.id, boardId)
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Укажите VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env для загрузки досок из Supabase.
+        </p>
+      </div>
+    )
+  }
+
+  if (!loading && !user) {
+    return <Navigate to="/auth" replace />
+  }
+
+  if (!boardId) {
+    return <Navigate to="/" replace />
+  }
+
+  if (loading || boardQuery.isPending) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3">
+        <Loader2 className="size-8 animate-spin text-indigo-600 dark:text-indigo-400" aria-hidden />
+        <p className="text-sm text-muted-foreground">Загрузка доски…</p>
+      </div>
+    )
+  }
+
+  if (boardQuery.isError || boardQuery.data == null) {
+    return <Navigate to="/" replace />
+  }
+
+  return <BoardKanbanDemo boardTitle={boardQuery.data.title} />
 }

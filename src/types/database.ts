@@ -9,11 +9,29 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      // Tables will be generated here by `supabase gen types typescript`
-      [tableName: string]: {
-        Row: Record<string, Json>
-        Insert: Record<string, Json>
-        Update: Record<string, Json>
+      boards: {
+        Row: {
+          id: string
+          title: string
+          owner_id: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          owner_id: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          owner_id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: Record<string, never>

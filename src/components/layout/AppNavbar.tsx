@@ -10,9 +10,15 @@ import { signOut } from '@/features/auth/api/auth-api'
 interface AppNavbarProps {
   sidebarOpen: boolean
   onToggleSidebar: () => void
+  /** When false, sidebar toggle is hidden (e.g. unauthenticated layout). */
+  sidebarAvailable?: boolean
 }
 
-export function AppNavbar({ sidebarOpen, onToggleSidebar }: AppNavbarProps) {
+export function AppNavbar({
+  sidebarOpen,
+  onToggleSidebar,
+  sidebarAvailable = true,
+}: AppNavbarProps) {
   const { theme, setTheme } = useTheme()
   const SidebarIcon = sidebarOpen ? PanelLeftClose : PanelLeftOpen
   const { user, loading } = useAuthSession()
@@ -31,14 +37,16 @@ export function AppNavbar({ sidebarOpen, onToggleSidebar }: AppNavbarProps) {
     <>
       <header className="sticky top-0 z-50 flex h-14 w-full items-center border-b border-border/60 bg-background/95 px-4 backdrop-blur-md sm:px-6">
         <div className="flex items-center gap-3">
-          {/* Sidebar toggle */}
-          <button
-            onClick={onToggleSidebar}
-            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Toggle sidebar"
-          >
-            <SidebarIcon className="size-4" />
-          </button>
+          {sidebarAvailable ? (
+            <button
+              onClick={onToggleSidebar}
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label="Toggle sidebar"
+              type="button"
+            >
+              <SidebarIcon className="size-4" />
+            </button>
+          ) : null}
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
