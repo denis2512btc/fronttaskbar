@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Zap, Loader2 } from 'lucide-react'
 import {
   Card,
@@ -20,6 +21,7 @@ import { GoogleSignInSection } from '@/features/auth/components/google-sign-in-s
 type Mode = 'signin' | 'signup'
 
 export function AuthPage() {
+  const { t } = useTranslation()
   const { user, loading } = useAuthSession()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -30,10 +32,12 @@ export function AuthPage() {
 
   useEffect(() => {
     const err = searchParams.get('error')
-    if (err) {
+    if (!err) return
+    const id = requestAnimationFrame(() => {
       setOauthError(err)
       setSearchParams({}, { replace: true })
-    }
+    })
+    return () => cancelAnimationFrame(id)
   }, [searchParams, setSearchParams])
 
   if (loading) {
@@ -43,7 +47,7 @@ export function AuthPage() {
           className="size-8 animate-spin text-indigo-600 dark:text-indigo-400"
           aria-hidden
         />
-        <p className="text-sm text-muted-foreground">Loading session…</p>
+        <p className="text-sm text-muted-foreground">{t('auth.loadingSession')}</p>
       </div>
     )
   }
@@ -59,9 +63,7 @@ export function AuthPage() {
       return
     }
     if (result.needsEmailConfirmation) {
-      setSignUpNotice(
-        'Check your inbox and confirm your email to finish signing up. Then you can sign in.',
-      )
+      setSignUpNotice(t('auth.emailConfirmNotice'))
       return
     }
     setSignUpNotice(null)
@@ -82,18 +84,16 @@ export function AuthPage() {
           <Link
             to="/"
             className="mx-auto flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-sm transition-opacity hover:opacity-90"
-            aria-label="На главную"
+            aria-label={t('auth.homeAria')}
           >
             <Zap className="size-5 text-white" strokeWidth={2.5} />
           </Link>
           <div className="space-y-1">
             <CardTitle className="text-2xl font-semibold tracking-tight">
-              {mode === 'signin' ? 'Welcome back' : 'Create an account'}
+              {mode === 'signin' ? t('auth.welcomeBack') : t('auth.createAccount')}
             </CardTitle>
             <CardDescription className="text-base">
-              {mode === 'signin'
-                ? 'Sign in to your AITaskBoard account'
-                : 'Get started with AITaskBoard for free'}
+              {mode === 'signin' ? t('auth.signInSubtitle') : t('auth.signUpSubtitle')}
             </CardDescription>
           </div>
 
@@ -108,7 +108,7 @@ export function AuthPage() {
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              Sign In
+              {t('common.signIn')}
             </button>
             <button
               type="button"
@@ -120,7 +120,7 @@ export function AuthPage() {
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              Sign Up
+              {t('common.signUp')}
             </button>
           </div>
         </CardHeader>
@@ -164,7 +164,7 @@ export function AuthPage() {
               to="/"
               className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
             >
-              Back to app
+              {t('common.backToApp')}
             </Link>
           </p>
         </CardContent>

@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslation } from 'react-i18next'
 import { ClipboardList, Loader2 } from 'lucide-react'
 import {
   Dialog,
@@ -59,13 +60,17 @@ function TaskCardDialogForm({
   onCancel,
   onRequestDelete,
 }: TaskCardDialogFormProps) {
+  const { t } = useTranslation()
   const baseId = useId()
   const titleFieldId = `${baseId}-title`
   const descriptionFieldId = `${baseId}-description`
   const assigneeFieldId = `${baseId}-assignee`
 
   const allowedIds = useMemo(() => assigneeOptions.map((o) => o.value), [assigneeOptions])
-  const schema = useMemo(() => createTaskFormSchema(allowedIds), [allowedIds])
+  const schema = useMemo(
+    () => createTaskFormSchema(allowedIds, t),
+    [allowedIds, t],
+  )
 
   const {
     register,
@@ -106,10 +111,10 @@ function TaskCardDialogForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={titleFieldId}>Название задачи</Label>
+        <Label htmlFor={titleFieldId}>{t('task.titleLabel')}</Label>
         <Input
           id={titleFieldId}
-          placeholder="Кратко, что сделать"
+          placeholder={t('task.titlePlaceholder')}
           autoComplete="off"
           aria-invalid={!!errors.title}
           {...register('title')}
@@ -118,10 +123,10 @@ function TaskCardDialogForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={descriptionFieldId}>Описание</Label>
+        <Label htmlFor={descriptionFieldId}>{t('task.descriptionLabel')}</Label>
         <textarea
           id={descriptionFieldId}
-          placeholder="Детали, контекст, критерии…"
+          placeholder={t('task.descriptionPlaceholder')}
           aria-invalid={!!errors.description}
           className={cn(textareaClassName, 'resize-y')}
           {...register('description')}
@@ -132,7 +137,7 @@ function TaskCardDialogForm({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label>Цвет карточки</Label>
+        <Label>{t('task.colorLabel')}</Label>
         <Controller
           name="color"
           control={control}
@@ -142,7 +147,7 @@ function TaskCardDialogForm({
                 <button
                   key={preset}
                   type="button"
-                  aria-label={`Цвет ${preset}`}
+                  aria-label={t('task.colorAria', { preset })}
                   onClick={() => field.onChange(preset)}
                   className={cn(
                     'size-9 rounded-full border border-border/40 shadow-sm transition-transform outline-none hover:scale-105 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-background',
@@ -159,7 +164,7 @@ function TaskCardDialogForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={assigneeFieldId}>Ответственный</Label>
+        <Label htmlFor={assigneeFieldId}>{t('task.assigneeLabel')}</Label>
         <select
           id={assigneeFieldId}
           aria-invalid={!!errors.assigneeId}
@@ -169,7 +174,7 @@ function TaskCardDialogForm({
           )}
           {...register('assigneeId')}
         >
-          <option value="">Не назначен</option>
+          <option value="">{t('task.unassigned')}</option>
           {assigneeOptions.map((u) => (
             <option key={u.value} value={u.value}>
               {u.label}
@@ -189,21 +194,21 @@ function TaskCardDialogForm({
             className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={onRequestDelete}
           >
-            Удалить карточку…
+            {t('task.deleteCard')}
           </Button>
         </div>
       : null}
 
       <DialogFooter className="gap-2 sm:gap-2">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          Отмена
+          {t('common.cancel')}
         </Button>
         <Button
           type="submit"
           disabled={isSubmitting}
           className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-sm shadow-indigo-500/20 hover:opacity-90"
         >
-          {isSubmitting ? 'Сохранение…' : isEdit ? 'Сохранить' : 'Создать карточку'}
+          {isSubmitting ? t('common.saving') : isEdit ? t('common.save') : t('task.createCard')}
         </Button>
       </DialogFooter>
     </form>
@@ -230,6 +235,7 @@ export function TaskCardDialog({
   onSubmit: onSubmitProp,
   onDeleteTask,
 }: TaskCardDialogProps) {
+  const { t } = useTranslation()
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const [deletePending, setDeletePending] = useState(false)
 
@@ -244,7 +250,7 @@ export function TaskCardDialog({
   }
 
   const isEdit = mode === 'edit'
-  const previewTitle = (initial?.title ?? '').trim() || 'Без названия'
+  const previewTitle = (initial?.title ?? '').trim() || t('common.untitled')
 
   const handleConfirmDelete = async () => {
     if (!onDeleteTask) return
@@ -269,12 +275,10 @@ export function TaskCardDialog({
             <ClipboardList className="size-4 text-white" strokeWidth={2} />
           </span>
           <DialogTitle className="text-lg">
-            {isEdit ? 'Редактировать карточку' : 'Новая карточка'}
+            {isEdit ? t('task.editTitle') : t('task.newTitle')}
           </DialogTitle>
           <DialogDescription>
-            {isEdit
-              ? 'Измените поля карточки. Данные сохраняются в Supabase.'
-              : 'Задайте поля карточки. Данные сохраняются в Supabase.'}
+            {isEdit ? t('task.editDesc') : t('task.newDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -313,9 +317,9 @@ export function TaskCardDialog({
       >
         <DialogContent className="sm:max-w-sm" showCloseButton={!deletePending}>
           <DialogHeader>
-            <DialogTitle className="text-lg">Удалить карточку?</DialogTitle>
+            <DialogTitle className="text-lg">{t('task.deleteConfirmTitle')}</DialogTitle>
             <DialogDescription>
-              Карточку «{previewTitle}» нельзя будет восстановить.
+              {t('task.deleteConfirmDesc', { title: previewTitle })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 border-0 bg-transparent p-0 sm:justify-end">
@@ -325,7 +329,7 @@ export function TaskCardDialog({
               disabled={deletePending}
               onClick={() => setConfirmDeleteOpen(false)}
             >
-              Отмена
+              {t('common.cancel')}
             </Button>
             <Button
               type="button"
@@ -337,9 +341,9 @@ export function TaskCardDialog({
               {deletePending ?
                 <>
                   <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
-                  Удаление…
+                  {t('common.deleting')}
                 </>
-              : 'Удалить навсегда'}
+              : t('common.deleteForever')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Loader2, Search, Trash2 } from 'lucide-react'
 import {
   Dialog,
@@ -19,13 +20,17 @@ import {
   useProfileSearchQuery,
   useRemoveBoardMemberMutation,
 } from '@/features/boards/hooks/use-boards-queries'
+import type { TFunction } from 'i18next'
 
-function displayLabel(profile: { display_name: string | null; email: string | null }): string {
-  return profile.display_name?.trim() || profile.email?.trim() || 'Пользователь'
+function displayLabel(
+  profile: { display_name: string | null; email: string | null },
+  t: TFunction,
+): string {
+  return profile.display_name?.trim() || profile.email?.trim() || t('board.roleUser')
 }
 
-function initialsFromDisplay(profile: { display_name: string | null; email: string | null }): string {
-  const base = displayLabel(profile)
+function initialsFromDisplay(profile: { display_name: string | null; email: string | null }, t: TFunction): string {
+  const base = displayLabel(profile, t)
   const parts = base.trim().split(/\s+/).filter(Boolean)
   if (parts.length >= 2) return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase()
   return base.slice(0, 2).toUpperCase()
@@ -50,23 +55,25 @@ export function BoardSettingsDialog({
   currentUserId,
   canManageMembers,
 }: BoardSettingsDialogProps) {
+  const { t } = useTranslation()
   const baseId = useId()
   const searchId = `${baseId}-search`
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
-  useEffect(() => {
-    if (!open) {
+  const handleDialogOpenChange = (next: boolean) => {
+    if (!next) {
       setSearchInput('')
       setDebouncedSearch('')
       setDeleteConfirmOpen(false)
     }
-  }, [open])
+    onOpenChange(next)
+  }
 
   useEffect(() => {
-    const t = window.setTimeout(() => setDebouncedSearch(searchInput.trim()), 300)
-    return () => window.clearTimeout(t)
+    const timer = window.setTimeout(() => setDebouncedSearch(searchInput.trim()), 300)
+    return () => window.clearTimeout(timer)
   }, [searchInput])
 
   const membersQuery = useBoardMembersQuery(boardId, open && Boolean(boardId))
@@ -109,28 +116,26 @@ export function BoardSettingsDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="max-h-[90vh] gap-4 overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-lg">Настройки доски</DialogTitle>
+          <DialogTitle className="text-lg">{t('boardSettings.title')}</DialogTitle>
           <DialogDescription>
-            {boardTitle ? (
-              <>Доска «{boardTitle}». Управление доступом участников через Supabase.</>
-            ) : (
-              <>Управление доступом участников через Supabase.</>
-            )}
+            {boardTitle ?
+              t('boardSettings.descWithTitle', { title: boardTitle })
+            : t('boardSettings.descNoTitle')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
           <section className="flex flex-col gap-2">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Владелец
+              {t('boardSettings.owner')}
             </h3>
             {ownerQuery.isPending ? (
               <div className="flex items-center gap-2 rounded-lg border border-border/60 px-3 py-2">
                 <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
-                <span className="text-sm text-muted-foreground">Загрузка…</span>
+                <span className="text-sm text-muted-foreground">{t('boardSettings.ownerLoading')}</span>
               </div>
             ) : ownerQuery.data ? (
               <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
@@ -141,13 +146,13 @@ export function BoardSettingsDialog({
                   )}
                   aria-hidden
                 >
-                  {initialsFromDisplay(ownerQuery.data)}
+                  {initialsFromDisplay(ownerQuery.data, t)}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">
-                    {displayLabel(ownerQuery.data)}
+                    {displayLabel(ownerQuery.data, t)}
                     {ownerQuery.data.id === currentUserId ? (
-                      <span className="ml-1.5 text-xs font-normal text-muted-foreground">(вы)</span>
+                      <span className="ml-1.5 text-xs font-normal text-muted-foreground">{t('common.you')}</span>
                     ) : null}
                   </p>
                   {ownerQuery.data.email ? (
@@ -156,37 +161,39 @@ export function BoardSettingsDialog({
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">Профиль владельца не найден.</p>
+              <p className="text-xs text-muted-foreground">{t('boardSettings.ownerNotFound')}</p>
             )}
           </section>
 
           <section className="flex flex-col gap-2">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Участники
+              {t('boardSettings.members')}
             </h3>
             {membersQuery.isPending ? (
               <div className="flex items-center gap-2 py-2">
                 <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
-                <span className="text-sm text-muted-foreground">Загрузка списка…</span>
+                <span className="text-sm text-muted-foreground">{t('boardSettings.membersLoading')}</span>
               </div>
             ) : membersQuery.isError ? (
               <p className="text-xs text-destructive">
                 {membersQuery.error instanceof Error
                   ? membersQuery.error.message
-                  : 'Не удалось загрузить участников'}
+                  : t('boardSettings.membersLoadError')}
               </p>
             ) : (membersQuery.data ?? []).length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Пока нет приглашённых участников{canManageMembers ? '. Найдите пользователя ниже.' : '.'}
+                {canManageMembers
+                  ? `${t('boardSettings.noMembers')}${t('boardSettings.noMembersHint')}`
+                  : `${t('boardSettings.noMembers')}.`}
               </p>
             ) : (
               <ul
                 className="flex max-h-40 flex-col gap-1 overflow-y-auto rounded-xl border border-border/60 bg-muted/30 p-1"
-                aria-label="Участники доски"
+                aria-label={t('boardSettings.membersAria')}
               >
                 {(membersQuery.data ?? []).map((row) => {
                   const p = row.profiles
-                  const label = p ? displayLabel(p) : row.user_id
+                  const label = p ? displayLabel(p, t) : row.user_id
                   const email = p?.email ?? null
                   const gid = row.user_id
                   return (
@@ -202,7 +209,7 @@ export function BoardSettingsDialog({
                           )}
                           aria-hidden
                         >
-                          {initialsFromDisplay(p)}
+                          {initialsFromDisplay(p, t)}
                         </span>
                       ) : (
                         <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
@@ -219,7 +226,7 @@ export function BoardSettingsDialog({
                           variant="ghost"
                           size="icon-sm"
                           className="shrink-0 text-muted-foreground hover:text-destructive"
-                          aria-label={`Убрать доступ для ${label}`}
+                          aria-label={t('boardSettings.removeAccessFor', { name: label })}
                           disabled={removeMutation.isPending}
                           onClick={() => void handleRemoveMember(row.user_id)}
                         >
@@ -235,7 +242,7 @@ export function BoardSettingsDialog({
               <p className="text-xs text-destructive">
                 {removeMutation.error instanceof Error
                   ? removeMutation.error.message
-                  : 'Не удалось удалить участника'}
+                  : t('boardSettings.removeMemberError')}
               </p>
             )}
           </section>
@@ -243,10 +250,10 @@ export function BoardSettingsDialog({
           {canManageMembers ? (
             <section className="flex flex-col gap-2">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Добавить участника
+                {t('boardSettings.addMember')}
               </h3>
               <label htmlFor={searchId} className="sr-only">
-                Поиск пользователей
+                {t('boardSettings.searchUsers')}
               </label>
               <div className="relative">
                 <Search
@@ -258,7 +265,7 @@ export function BoardSettingsDialog({
                   type="search"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="Имя или email (от 2 символов)…"
+                  placeholder={t('boardSettings.searchPlaceholder')}
                   autoComplete="off"
                   className="pl-8"
                   disabled={!dialogActive}
@@ -271,7 +278,7 @@ export function BoardSettingsDialog({
                     ? addMutation.error.message
                     : searchQuery.error instanceof Error
                       ? searchQuery.error.message
-                      : 'Ошибка запроса'}
+                      : t('boardSettings.queryError')}
                 </p>
               )}
 
@@ -281,16 +288,16 @@ export function BoardSettingsDialog({
               >
                 {debouncedSearch.length > 0 && debouncedSearch.length < 2 ? (
                   <p className="px-3 py-4 text-center text-sm text-muted-foreground">
-                    Введите минимум 2 символа для поиска по всем профилям.
+                    {t('boardSettings.searchMinChars')}
                   </p>
                 ) : searchQuery.isPending ? (
                   <div className="flex items-center justify-center gap-2 py-6">
                     <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
-                    <span className="text-sm text-muted-foreground">Поиск…</span>
+                    <span className="text-sm text-muted-foreground">{t('common.search')}</span>
                   </div>
                 ) : searchCandidates.length === 0 ? (
                   <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-                    {debouncedSearch.length >= 2 ? 'Никого не найдено' : 'Начните вводить запрос'}
+                    {debouncedSearch.length >= 2 ? t('boardSettings.searchEmpty') : t('boardSettings.searchStart')}
                   </p>
                 ) : (
                   searchCandidates.map((profile) => (
@@ -309,11 +316,11 @@ export function BoardSettingsDialog({
                         )}
                         aria-hidden
                       >
-                        {initialsFromDisplay(profile)}
+                        {initialsFromDisplay(profile, t)}
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-foreground">
-                          {displayLabel(profile)}
+                          {displayLabel(profile, t)}
                         </p>
                         {profile.email ? (
                           <p className="truncate text-xs text-muted-foreground">{profile.email}</p>
@@ -329,10 +336,10 @@ export function BoardSettingsDialog({
           {canManageMembers ? (
             <section className="flex flex-col gap-2 rounded-xl border border-destructive/25 bg-destructive/5 p-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-destructive">
-                Опасная зона
+                {t('boardSettings.dangerZone')}
               </h3>
               <p className="text-xs text-muted-foreground">
-                Удаление доски необратимо: колонки и задачи будут удалены вместе с доской.
+                {t('boardSettings.dangerDesc')}
               </p>
               <Button
                 type="button"
@@ -340,7 +347,7 @@ export function BoardSettingsDialog({
                 className="w-full sm:w-auto"
                 onClick={() => setDeleteConfirmOpen(true)}
               >
-                Удалить доску
+                {t('boardSettings.deleteBoard')}
               </Button>
             </section>
           ) : null}

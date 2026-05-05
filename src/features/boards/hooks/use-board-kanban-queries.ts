@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
+import i18n from '@/lib/i18n/i18n'
 import {
   createBoardColumn,
   deleteBoardColumn,
@@ -47,7 +48,7 @@ export function useCreateBoardColumnMutation(boardId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: { title: string; color: string }) => {
-      if (!boardId) throw new Error('Нет доски')
+      if (!boardId) throw new Error(i18n.t('errors.noBoard'))
       return createBoardColumn({ boardId, title: input.title, color: input.color })
     },
     onSuccess: async () => {
@@ -87,7 +88,7 @@ export function useCreateBoardTaskMutation(boardId: string | undefined) {
       color: string
       assigneeId: string | null
     }) => {
-      if (!boardId) throw new Error('Нет доски')
+      if (!boardId) throw new Error(i18n.t('errors.noBoard'))
       return createBoardTask({
         boardId,
         columnId: input.columnId,
@@ -136,7 +137,7 @@ export function useReorderKanbanTasksMutation(boardId: string | undefined) {
       tasksById: Map<string, KanbanTaskFromApi>
       columnSyncs: { columnId: string; orderedTaskIds: string[] }[]
     }) => {
-      if (!boardId) throw new Error('Нет доски')
+      if (!boardId) throw new Error(i18n.t('errors.noBoard'))
       return applyKanbanTaskMoves({
         boardId,
         tasksById: input.tasksById,

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useTheme } from 'next-themes'
+import { useTranslation } from 'react-i18next'
 import { Moon, Sun, Zap, PanelLeftClose, PanelLeftOpen, Bell, Search, LogOut } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { AuthDialog } from '@/features/auth/components/AuthDialog'
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session'
 import { signOut } from '@/features/auth/api/auth-api'
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 
 interface AppNavbarProps {
   sidebarOpen: boolean
@@ -20,14 +22,21 @@ export function AppNavbar({
   sidebarAvailable = true,
 }: AppNavbarProps) {
   const { theme, setTheme } = useTheme()
+  const { t } = useTranslation()
   const SidebarIcon = sidebarOpen ? PanelLeftClose : PanelLeftOpen
   const { user, loading } = useAuthSession()
 
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
 
-  const openSignIn = () => { setAuthMode('signin'); setAuthOpen(true) }
-  const openSignUp = () => { setAuthMode('signup'); setAuthOpen(true) }
+  const openSignIn = () => {
+    setAuthMode('signin')
+    setAuthOpen(true)
+  }
+  const openSignUp = () => {
+    setAuthMode('signup')
+    setAuthOpen(true)
+  }
 
   const avatarLetter = user?.user_metadata?.name
     ? (user.user_metadata.name as string)[0].toUpperCase()
@@ -39,10 +48,10 @@ export function AppNavbar({
         <div className="flex items-center gap-3">
           {sidebarAvailable ? (
             <button
+              type="button"
               onClick={onToggleSidebar}
               className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Toggle sidebar"
-              type="button"
+              aria-label={t('common.toggleSidebar')}
             >
               <SidebarIcon className="size-4" />
             </button>
@@ -66,7 +75,7 @@ export function AppNavbar({
             <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Поиск задач, досок..."
+              placeholder={t('common.searchTasksBoards')}
               className="h-8 w-full rounded-lg border border-border bg-muted/40 pl-8 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
             />
           </div>
@@ -74,12 +83,19 @@ export function AppNavbar({
 
         {/* Right controls */}
         <div className="flex items-center gap-1.5">
-          <button className="relative flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+          <LanguageSwitcher className="flex sm:hidden" />
+          <LanguageSwitcher className="hidden sm:flex" />
+
+          <button
+            type="button"
+            className="relative flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
             <Bell className="size-4" />
             <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-indigo-500" />
           </button>
 
           <button
+            type="button"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
@@ -90,13 +106,17 @@ export function AppNavbar({
             user ? (
               <div className="flex items-center gap-1.5">
                 <button
+                  type="button"
                   onClick={() => signOut()}
                   className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  title="Sign out"
+                  title={t('common.signOut')}
                 >
                   <LogOut className="size-4" />
                 </button>
-                <button className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">
+                <button
+                  type="button"
+                  className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white"
+                >
                   {avatarLetter}
                 </button>
               </div>
@@ -108,13 +128,14 @@ export function AppNavbar({
                   className="hidden sm:inline-flex"
                   onClick={openSignIn}
                 >
-                  Sign In
+                  {t('common.signIn')}
                 </Button>
                 <button
+                  type="button"
                   onClick={openSignUp}
                   className="hidden items-center rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90 sm:flex"
                 >
-                  Sign Up
+                  {t('common.signUp')}
                 </button>
               </div>
             )

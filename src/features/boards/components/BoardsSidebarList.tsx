@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { KanbanSquare, Settings, Trash2 } from 'lucide-react'
 import { Link, matchPath, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session'
 import { BoardSettingsDialog } from '@/features/boards/components/BoardSettingsDialog'
@@ -10,6 +11,7 @@ import { boardGradientFromId } from '@/features/boards/utils/board-accent'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 
 export function BoardsSidebarList() {
+  const { t } = useTranslation()
   const { pathname } = useLocation()
   const { user } = useAuthSession()
   const boardMatch = matchPath({ path: '/board/:boardId', end: true }, pathname)
@@ -29,7 +31,7 @@ export function BoardsSidebarList() {
   if (!isSupabaseConfigured) {
     return (
       <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1.5 text-xs text-amber-900 dark:text-amber-200">
-        Укажите ключи Supabase в .env, чтобы загрузить доски.
+        {t('sidebar.supabaseKeys')}
       </p>
     )
   }
@@ -50,7 +52,7 @@ export function BoardsSidebarList() {
   if (isError) {
     return (
       <p className="text-xs text-destructive">
-        {error instanceof Error ? error.message : 'Не удалось загрузить доски'}
+        {error instanceof Error ? error.message : t('sidebar.loadError')}
       </p>
     )
   }
@@ -58,7 +60,7 @@ export function BoardsSidebarList() {
   if (!boards?.length) {
     return (
       <p className="text-xs text-muted-foreground">
-        Пока нет досок. Нажмите «Новая доска», чтобы создать первую.
+        {t('sidebar.empty')}
       </p>
     )
   }
@@ -141,7 +143,7 @@ export function BoardsSidebarList() {
                         ? 'text-indigo-700 opacity-100 dark:text-indigo-300'
                         : 'text-muted-foreground opacity-70 group-hover/item:opacity-100',
                     )}
-                    aria-label={`Настройки доски ${board.title}`}
+                    aria-label={t('sidebar.settingsAria', { title: board.title })}
                   >
                     <Settings className="size-4" />
                   </button>
@@ -156,7 +158,7 @@ export function BoardsSidebarList() {
                       'flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background/70 hover:text-destructive',
                       active ? 'opacity-100' : 'opacity-70 group-hover/item:opacity-100',
                     )}
-                    aria-label={`Удалить доску ${board.title}`}
+                    aria-label={t('sidebar.deleteAria', { title: board.title })}
                   >
                     <Trash2 className="size-4" />
                   </button>

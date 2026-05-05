@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
+import i18n from '@/lib/i18n/i18n'
 import {
   addBoardMember,
   createBoard,
@@ -69,7 +70,7 @@ export function useCreateBoardMutation(ownerId: string | undefined) {
 
   return useMutation({
     mutationFn: (title: string) => {
-      if (!ownerId) throw new Error('Нужна авторизация')
+      if (!ownerId) throw new Error(i18n.t('errors.needAuth'))
       return createBoard({ title, ownerId })
     },
     onSuccess: async (result) => {
@@ -84,7 +85,7 @@ export function useAddBoardMemberMutation(boardId: string | undefined) {
 
   return useMutation({
     mutationFn: (memberUserId: string) => {
-      if (!boardId) throw new Error('Нет доски')
+      if (!boardId) throw new Error(i18n.t('errors.noBoard'))
       return addBoardMember(boardId, memberUserId)
     },
     onSuccess: async () => {
@@ -102,7 +103,7 @@ export function useRemoveBoardMemberMutation(boardId: string | undefined) {
 
   return useMutation({
     mutationFn: (memberUserId: string) => {
-      if (!boardId) throw new Error('Нет доски')
+      if (!boardId) throw new Error(i18n.t('errors.noBoard'))
       return removeBoardMember(boardId, memberUserId)
     },
     onSuccess: async () => {

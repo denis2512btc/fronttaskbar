@@ -1,6 +1,7 @@
-import { useEffect, useId } from 'react'
+import { useEffect, useId, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslation } from 'react-i18next'
 import { LayoutGrid } from 'lucide-react'
 import {
   Dialog,
@@ -16,7 +17,7 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { COLUMN_COLOR_PRESET_CLASSES } from '@/features/columns/constants/column-color-presets'
 import {
-  columnEditorFormSchema,
+  createColumnEditorFormSchema,
   type ColumnEditorFormInput,
 } from '@/features/columns/validations/column-editor'
 
@@ -35,8 +36,11 @@ export function ColumnEditorDialog({
   initial,
   onSubmit: onSubmitProp,
 }: ColumnEditorDialogProps) {
+  const { t } = useTranslation()
   const baseId = useId()
   const titleFieldId = `${baseId}-title`
+
+  const columnSchema = useMemo(() => createColumnEditorFormSchema(t), [t])
 
   const {
     register,
@@ -45,7 +49,7 @@ export function ColumnEditorDialog({
     reset,
     formState: { errors },
   } = useForm<ColumnEditorFormInput>({
-    resolver: zodResolver(columnEditorFormSchema),
+    resolver: zodResolver(columnSchema),
     defaultValues: {
       title: '',
       color: COLUMN_COLOR_PRESET_CLASSES[0],
@@ -89,21 +93,19 @@ export function ColumnEditorDialog({
             <LayoutGrid className="size-4 text-white" strokeWidth={2} />
           </span>
           <DialogTitle className="text-lg">
-            {isEdit ? 'Редактировать колонку' : 'Новая колонка'}
+            {isEdit ? t('columnEditor.editTitle') : t('columnEditor.newTitle')}
           </DialogTitle>
           <DialogDescription>
-            {isEdit
-              ? 'Измените название и цвет индикатора колонки. Данные сохраняются в Supabase.'
-              : 'Укажите название и цвет новой колонки. Данные сохраняются в Supabase.'}
+            {isEdit ? t('columnEditor.editDesc') : t('columnEditor.newDesc')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor={titleFieldId}>Название</Label>
+            <Label htmlFor={titleFieldId}>{t('columnEditor.nameLabel')}</Label>
             <Input
               id={titleFieldId}
-              placeholder="Например, Бэклог"
+              placeholder={t('columnEditor.placeholder')}
               autoComplete="off"
               aria-invalid={!!errors.title}
               {...register('title')}
@@ -114,7 +116,7 @@ export function ColumnEditorDialog({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Цвет</Label>
+            <Label>{t('columnEditor.colorLabel')}</Label>
             <Controller
               name="color"
               control={control}
@@ -124,7 +126,7 @@ export function ColumnEditorDialog({
                     <button
                       key={preset}
                       type="button"
-                      aria-label={`Цвет ${preset}`}
+                      aria-label={t('columnEditor.colorAria', { preset })}
                       onClick={() => field.onChange(preset)}
                       className={cn(
                         'size-9 rounded-full border border-border/40 shadow-sm transition-transform outline-none hover:scale-105 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-background',
@@ -144,13 +146,13 @@ export function ColumnEditorDialog({
 
           <DialogFooter className="gap-2 sm:gap-2">
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-              Отмена
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
               className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-sm shadow-indigo-500/20 hover:opacity-90"
             >
-              {isEdit ? 'Сохранить' : 'Добавить'}
+              {isEdit ? t('common.save') : t('common.add')}
             </Button>
           </DialogFooter>
         </form>

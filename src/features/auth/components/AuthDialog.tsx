@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Zap } from 'lucide-react'
 import {
   Dialog,
@@ -19,6 +20,7 @@ interface AuthDialogProps {
 }
 
 export function AuthDialog({ open, defaultMode = 'signin', onOpenChange }: AuthDialogProps) {
+  const { t } = useTranslation()
   const [mode, setMode] = useState<Mode>(defaultMode)
   const [apiError, setApiError] = useState<string | null>(null)
   const [signUpNotice, setSignUpNotice] = useState<string | null>(null)
@@ -42,12 +44,10 @@ export function AuthDialog({ open, defaultMode = 'signin', onOpenChange }: AuthD
             <Zap className="size-4 text-white" strokeWidth={2.5} />
           </span>
           <DialogTitle className="text-lg">
-            {mode === 'signin' ? 'Welcome back' : 'Create an account'}
+            {mode === 'signin' ? t('auth.welcomeBack') : t('auth.createAccount')}
           </DialogTitle>
           <DialogDescription>
-            {mode === 'signin'
-              ? 'Sign in to your AITaskBoard account'
-              : 'Get started with AITaskBoard for free'}
+            {mode === 'signin' ? t('auth.signInSubtitle') : t('auth.signUpSubtitle')}
           </DialogDescription>
         </DialogHeader>
 
@@ -88,9 +88,7 @@ export function AuthDialog({ open, defaultMode = 'signin', onOpenChange }: AuthD
                   return
                 }
                 if (result.needsEmailConfirmation) {
-                  setSignUpNotice(
-                    'Check your inbox and confirm your email to finish signing up. Then you can sign in.',
-                  )
+                  setSignUpNotice(t('auth.emailConfirmNotice'))
                   return
                 }
                 setSignUpNotice(null)

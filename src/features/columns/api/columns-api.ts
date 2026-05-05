@@ -1,4 +1,5 @@
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client'
+import i18n from '@/lib/i18n/i18n'
 import type { Database } from '@/types/database'
 import type { ColumnColorPreset } from '@/features/columns/constants/column-color-presets'
 import { COLUMN_COLOR_PRESET_CLASSES } from '@/features/columns/constants/column-color-presets'
@@ -9,9 +10,7 @@ const PRESET_SET = new Set<string>(COLUMN_COLOR_PRESET_CLASSES)
 
 function ensureConfigured(): void {
   if (!isSupabaseConfigured) {
-    throw new Error(
-      'Supabase не настроен. Укажите VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env.',
-    )
+    throw new Error(i18n.t('errors.supabaseNotConfigured'))
   }
 }
 
@@ -87,7 +86,7 @@ export async function createBoardColumn(params: {
     .single()
 
   if (error) throw new Error(error.message)
-  if (!data) throw new Error('Не удалось создать колонку')
+  if (!data) throw new Error(i18n.t('errors.createColumnFailed'))
   return mapBoardColumnRow(data as BoardColumnRow)
 }
 

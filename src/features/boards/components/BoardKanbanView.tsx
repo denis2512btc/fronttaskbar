@@ -21,6 +21,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { Loader2, Plus, MoreHorizontal, ChevronLeft, Pencil, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import {
   useBoardMembersQuery,
@@ -123,6 +124,7 @@ function TaskCard({
   assigneePreview: AssigneePreview | null
   onOpenEdit: () => void
 }) {
+  const { t } = useTranslation()
   const leftBorder = TASK_CARD_LEFT_BORDER[task.color]
 
   return (
@@ -164,7 +166,7 @@ function TaskCard({
             </span>
           </div>
         ) : (
-          <span className="text-[11px] text-muted-foreground">Без ответственного</span>
+          <span className="text-[11px] text-muted-foreground">{t('board.noAssignee')}</span>
         )}
       </div>
     </div>
@@ -222,6 +224,7 @@ export function BoardKanbanView({
   boardTitle: string
   boardOwnerId: string
 }) {
+  const { t } = useTranslation()
   const columnsQuery = useBoardColumnsQuery(boardId)
   const tasksQuery = useBoardTasksQuery(boardId)
   const { data: members } = useBoardMembersQuery(boardId, true)
@@ -261,7 +264,7 @@ export function BoardKanbanView({
   const assigneeOptions: TaskAssigneeOption[] = useMemo(() => {
     const opts: TaskAssigneeOption[] = []
     const ownerLabel =
-      ownerProfile?.display_name?.trim() || ownerProfile?.email?.trim() || 'Владелец'
+      ownerProfile?.display_name?.trim() || ownerProfile?.email?.trim() || t('board.roleOwner')
     opts.push({ value: boardOwnerId, label: ownerLabel })
     for (const m of members ?? []) {
       if (m.user_id === boardOwnerId) continue
@@ -270,25 +273,25 @@ export function BoardKanbanView({
       opts.push({ value: m.user_id, label })
     }
     return opts
-  }, [boardOwnerId, ownerProfile, members])
+  }, [boardOwnerId, ownerProfile, members, t])
 
   const assigneePreviewById = useMemo(() => {
     const map = new Map<string, AssigneePreview>()
     const put = (userId: string, labelRaw: string) => {
-      const label = labelRaw.trim() || 'Участник'
+      const label = labelRaw.trim() || t('board.roleMember')
       map.set(userId, {
         label,
         initials: initialsFromLabel(label),
         gradientSuffix: boardGradientFromId(userId),
       })
     }
-    put(boardOwnerId, ownerProfile?.display_name || ownerProfile?.email || 'Владелец')
+    put(boardOwnerId, ownerProfile?.display_name || ownerProfile?.email || t('board.roleOwner'))
     for (const m of members ?? []) {
       const p = m.profiles
       put(m.user_id, p?.display_name || p?.email || m.user_id)
     }
     return map
-  }, [boardOwnerId, ownerProfile, members])
+  }, [boardOwnerId, ownerProfile, members, t])
 
   const columnsWithTasks: KanbanColumnWithTasks[] = useMemo(() => {
     const cols = columnsQuery.data ?? []
@@ -331,7 +334,7 @@ export function BoardKanbanView({
       {
         userId: boardOwnerId,
         label:
-          ownerProfile?.display_name?.trim() || ownerProfile?.email?.trim() || 'Владелец',
+          ownerProfile?.display_name?.trim() || ownerProfile?.email?.trim() || t('board.roleOwner'),
       },
     ]
     for (const m of members ?? []) {
@@ -343,7 +346,7 @@ export function BoardKanbanView({
       })
     }
     return list.slice(0, 4)
-  }, [boardOwnerId, ownerProfile, members])
+  }, [boardOwnerId, ownerProfile, members, t])
 
   const editingColumn = editingColumnId
     ? columnsWithTasks.find((c) => c.id === editingColumnId)
@@ -352,7 +355,7 @@ export function BoardKanbanView({
   const kanbanLoading = columnsQuery.isPending || tasksQuery.isPending
   const kanbanError =
     columnsQuery.isError || tasksQuery.isError
-      ? columnsQuery.error?.message || tasksQuery.error?.message || 'Ошибка загрузки канбана'
+      ? columnsQuery.error?.message || tasksQuery.error?.message || t('board.kanbanLoadError')
       : null
 
   const columnIdsOrdered = useMemo(() => columnsWithTasks.map((c) => c.id), [columnsWithTasks])
@@ -483,7 +486,7 @@ export function BoardKanbanView({
       })
     } catch (e) {
       setActionError(
-        e instanceof Error ? e.message : 'Не удалось сохранить порядок',
+        e instanceof Error ? e.message : t('board.reorderError'),
       )
     } finally {
       setOptimisticColumnItems(null)
@@ -547,7 +550,7 @@ export function BoardKanbanView({
         await updateColumn.mutateAsync({ id: editingColumnId, title, color: data.color })
       }
     } catch (e) {
-      setActionError(e instanceof Error ? e.message : 'Не удалось сохранить колонку')
+      setActionError(e instanceof Error ? e.message : t('board.saveColumnError'))
       throw e
     }
   }
@@ -575,7 +578,7 @@ export function BoardKanbanView({
         })
       }
     } catch (e) {
-      setActionError(e instanceof Error ? e.message : 'Не удалось сохранить карточку')
+      setActionError(e instanceof Error ? e.message : t('board.saveCardError'))
       throw e
     }
   }
@@ -592,7 +595,7 @@ export function BoardKanbanView({
             className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ChevronLeft className="size-4" />
-            Доски
+            {t('board.boardsBreadcrumb')}
           </Link>
           <span className="text-muted-foreground/40">/</span>
           <h1 className="text-sm font-semibold">{boardTitle}</h1>
@@ -617,7 +620,7 @@ export function BoardKanbanView({
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
           >
             <Plus className="size-3.5" />
-            Участник
+            {t('board.memberInvite')}
           </button>
           <button
             type="button"
@@ -641,7 +644,7 @@ export function BoardKanbanView({
               className="size-8 animate-spin text-indigo-600 dark:text-indigo-400"
               aria-hidden
             />
-            <p className="text-sm text-muted-foreground">Загрузка канбана…</p>
+            <p className="text-sm text-muted-foreground">{t('board.kanbanLoading')}</p>
           </div>
         )}
         {kanbanError && !kanbanLoading && (
@@ -677,7 +680,7 @@ export function BoardKanbanView({
                       >
                         <button
                           type="button"
-                          aria-label="Действия с колонкой"
+                          aria-label={t('board.columnActionsAria')}
                           aria-expanded={columnMenuOpenId === col.id}
                           onClick={() =>
                             setColumnMenuOpenId((m) => (m === col.id ? null : col.id))
@@ -704,7 +707,7 @@ export function BoardKanbanView({
                               }}
                             >
                               <Pencil className="size-3.5 shrink-0 opacity-70" aria-hidden />
-                              Редактировать
+                              {t('common.edit')}
                             </button>
                             <button
                               type="button"
@@ -720,7 +723,7 @@ export function BoardKanbanView({
                               }}
                             >
                               <Trash2 className="size-3.5 shrink-0 opacity-70" aria-hidden />
-                              Удалить…
+                              {t('common.delete')}
                             </button>
                           </div>
                         : null}
@@ -735,7 +738,7 @@ export function BoardKanbanView({
                           const assigneePreview =
                             task.assigneeId ?
                               assigneePreviewById.get(task.assigneeId) ?? {
-                                label: 'Участник',
+                                label: t('board.roleMember'),
                                 initials: '?',
                                 gradientSuffix: boardGradientFromId(task.assigneeId),
                               }
@@ -758,7 +761,7 @@ export function BoardKanbanView({
                       className="flex items-center gap-2 rounded-xl border border-dashed border-border/60 px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-indigo-400 hover:bg-indigo-50/40 hover:text-indigo-600 dark:hover:bg-indigo-950/20 dark:hover:text-indigo-400"
                     >
                       <Plus className="size-4" />
-                      Создать карточку
+                      {t('board.createCard')}
                     </button>
                   </div>
                 )
@@ -770,7 +773,7 @@ export function BoardKanbanView({
                 className="flex h-fit w-72 shrink-0 items-center gap-2 rounded-xl border border-dashed border-border/60 px-4 py-3 text-sm text-muted-foreground transition-colors hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
               >
                 <Plus className="size-4" />
-                Добавить колонку
+                {t('board.addColumn')}
               </button>
             </div>
 
@@ -782,7 +785,7 @@ export function BoardKanbanView({
                     assigneePreview={
                       activeDragTask.assigneeId ?
                         assigneePreviewById.get(activeDragTask.assigneeId) ?? {
-                          label: 'Участник',
+                          label: t('board.roleMember'),
                           initials: '?',
                           gradientSuffix: boardGradientFromId(activeDragTask.assigneeId),
                         }
@@ -843,7 +846,7 @@ export function BoardKanbanView({
                   await deleteTask.mutateAsync(taskDialogTaskId)
                 } catch (e) {
                   setActionError(
-                    e instanceof Error ? e.message : 'Не удалось удалить карточку',
+                    e instanceof Error ? e.message : t('board.deleteCardError'),
                   )
                   throw e
                 }

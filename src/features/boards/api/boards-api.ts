@@ -1,5 +1,6 @@
 import type { User } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client'
+import i18n from '@/lib/i18n/i18n'
 import type { Database } from '@/types/database'
 
 export type BoardRow = Database['public']['Tables']['boards']['Row']
@@ -16,9 +17,7 @@ export interface BoardMemberWithProfile {
 
 function ensureConfigured(): void {
   if (!isSupabaseConfigured) {
-    throw new Error(
-      'Supabase не настроен. Укажите VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env.',
-    )
+    throw new Error(i18n.t('errors.supabaseNotConfigured'))
   }
 }
 
@@ -127,7 +126,7 @@ export async function createBoard(params: {
     .single()
 
   if (error) throw new Error(error.message)
-  if (!data) throw new Error('Не удалось создать доску')
+  if (!data) throw new Error(i18n.t('errors.createBoardFailed'))
   return { id: data.id }
 }
 

@@ -1,10 +1,11 @@
-import { useId } from 'react'
+import { useId, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslation } from 'react-i18next'
 import { Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { loginSchema, registerSchema } from '@/lib/validations/auth'
+import { createLoginSchema, createRegisterSchema } from '@/lib/validations/auth'
 import type { LoginInput, RegisterInput } from '@/lib/validations/auth'
 import { signIn, signUp, type SignUpResult } from '@/features/auth/api/auth-api'
 
@@ -24,9 +25,12 @@ export function EmailSignInForm({
   onSignInSuccess,
   switchToSignUp,
 }: EmailSignInFormProps) {
+  const { t } = useTranslation()
   const baseId = useId()
   const emailId = `${baseId}-email`
   const passwordId = `${baseId}-password`
+
+  const loginSchema = useMemo(() => createLoginSchema(t), [t])
 
   const {
     register,
@@ -40,18 +44,18 @@ export function EmailSignInForm({
       await signIn(data)
       onSignInSuccess()
     } catch (err) {
-      setApiError(err instanceof Error ? err.message : 'Something went wrong')
+      setApiError(err instanceof Error ? err.message : t('auth.genericError'))
     }
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={emailId}>Email</Label>
+        <Label htmlFor={emailId}>{t('auth.email')}</Label>
         <Input
           id={emailId}
           type="email"
-          placeholder="you@example.com"
+          placeholder={t('auth.placeholderEmail')}
           autoComplete="email"
           aria-invalid={!!errors.email}
           {...register('email')}
@@ -62,11 +66,11 @@ export function EmailSignInForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={passwordId}>Password</Label>
+        <Label htmlFor={passwordId}>{t('auth.password')}</Label>
         <Input
           id={passwordId}
           type="password"
-          placeholder="••••••••"
+          placeholder={t('auth.placeholderPassword')}
           autoComplete="current-password"
           aria-invalid={!!errors.password}
           {...register('password')}
@@ -84,17 +88,17 @@ export function EmailSignInForm({
 
       <button type="submit" disabled={isSubmitting} className={submitButtonClassName}>
         {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
-        Sign In
+        {t('common.signIn')}
       </button>
 
       <p className="text-center text-xs text-muted-foreground">
-        Don&apos;t have an account?{' '}
+        {t('auth.noAccount')}{' '}
         <button
           type="button"
           onClick={switchToSignUp}
           className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
         >
-          Sign Up
+          {t('common.signUp')}
         </button>
       </p>
     </form>
@@ -114,10 +118,13 @@ export function EmailSignUpForm({
   onSignUpComplete,
   switchToSignIn,
 }: EmailSignUpFormProps) {
+  const { t } = useTranslation()
   const baseId = useId()
   const nameId = `${baseId}-name`
   const emailId = `${baseId}-email`
   const passwordId = `${baseId}-password`
+
+  const registerSchema = useMemo(() => createRegisterSchema(t), [t])
 
   const {
     register,
@@ -131,18 +138,18 @@ export function EmailSignUpForm({
       const result = await signUp(data)
       onSignUpComplete(result)
     } catch (err) {
-      setApiError(err instanceof Error ? err.message : 'Something went wrong')
+      setApiError(err instanceof Error ? err.message : t('auth.genericError'))
     }
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={nameId}>Name</Label>
+        <Label htmlFor={nameId}>{t('auth.name')}</Label>
         <Input
           id={nameId}
           type="text"
-          placeholder="Your name"
+          placeholder={t('auth.placeholderName')}
           autoComplete="name"
           aria-invalid={!!errors.name}
           {...register('name')}
@@ -153,11 +160,11 @@ export function EmailSignUpForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={emailId}>Email</Label>
+        <Label htmlFor={emailId}>{t('auth.email')}</Label>
         <Input
           id={emailId}
           type="email"
-          placeholder="you@example.com"
+          placeholder={t('auth.placeholderEmail')}
           autoComplete="email"
           aria-invalid={!!errors.email}
           {...register('email')}
@@ -168,11 +175,11 @@ export function EmailSignUpForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={passwordId}>Password</Label>
+        <Label htmlFor={passwordId}>{t('auth.password')}</Label>
         <Input
           id={passwordId}
           type="password"
-          placeholder="••••••••"
+          placeholder={t('auth.placeholderPassword')}
           autoComplete="new-password"
           aria-invalid={!!errors.password}
           {...register('password')}
@@ -190,17 +197,17 @@ export function EmailSignUpForm({
 
       <button type="submit" disabled={isSubmitting} className={submitButtonClassName}>
         {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
-        Create Account
+        {t('auth.createAccountBtn')}
       </button>
 
       <p className="text-center text-xs text-muted-foreground">
-        Already have an account?{' '}
+        {t('auth.haveAccount')}{' '}
         <button
           type="button"
           onClick={switchToSignIn}
           className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
         >
-          Sign In
+          {t('common.signIn')}
         </button>
       </p>
     </form>

@@ -1,6 +1,7 @@
-import { useEffect, useId } from 'react'
+import { useEffect, useId, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslation } from 'react-i18next'
 import { KanbanSquare } from 'lucide-react'
 import {
   Dialog,
@@ -20,6 +21,7 @@ import { useUIStore } from '@/stores/ui.store'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 
 export function CreateBoardDialog() {
+  const { t } = useTranslation()
   const baseId = useId()
   const titleFieldId = `${baseId}-title`
   const { user } = useAuthSession()
@@ -28,13 +30,15 @@ export function CreateBoardDialog() {
 
   const createMutation = useCreateBoardMutation(user?.id)
 
+  const boardSchema = useMemo(() => createBoardFormSchema(t), [t])
+
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<CreateBoardFormInput>({
-    resolver: zodResolver(createBoardFormSchema),
+    resolver: zodResolver(boardSchema),
     defaultValues: { title: '' },
   })
 
@@ -42,7 +46,7 @@ export function CreateBoardDialog() {
     if (createBoardDialogOpen) {
       createMutation.reset()
     }
-  }, [createBoardDialogOpen, createMutation.reset])
+  }, [createBoardDialogOpen, createMutation])
 
   const handleOpenChange = (next: boolean) => {
     setCreateBoardDialogOpen(next)
@@ -69,24 +73,24 @@ export function CreateBoardDialog() {
           <span className="mb-1 flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600">
             <KanbanSquare className="size-4 text-white" strokeWidth={2} />
           </span>
-          <DialogTitle className="text-lg">Новая доска</DialogTitle>
+          <DialogTitle className="text-lg">{t('boardCreate.title')}</DialogTitle>
           <DialogDescription>
-            Введите название доски. Она будет сохранена в вашем аккаунте Supabase.
+            {t('boardCreate.description')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           {!isSupabaseConfigured && (
             <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
-              Укажите VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env, чтобы создавать доски.
+              {t('boardCreate.supabaseHint')}
             </p>
           )}
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor={titleFieldId}>Название</Label>
+            <Label htmlFor={titleFieldId}>{t('boardCreate.nameLabel')}</Label>
             <Input
               id={titleFieldId}
-              placeholder="Например, Product Roadmap"
+              placeholder={t('boardCreate.placeholder')}
               autoComplete="off"
               aria-invalid={!!errors.title}
               disabled={submitBlocked}
@@ -101,20 +105,20 @@ export function CreateBoardDialog() {
             <p className="text-xs text-destructive">
               {createMutation.error instanceof Error
                 ? createMutation.error.message
-                : 'Не удалось создать доску'}
+                : t('boardCreate.createError')}
             </p>
           )}
 
           <DialogFooter className="gap-2 sm:gap-2">
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-              Отмена
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={submitBlocked || createMutation.isPending}
               className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-sm shadow-indigo-500/20 hover:opacity-90"
             >
-              {createMutation.isPending ? 'Создание…' : 'Создать'}
+              {createMutation.isPending ? t('common.creating') : t('boardCreate.create')}
             </Button>
           </DialogFooter>
         </form>

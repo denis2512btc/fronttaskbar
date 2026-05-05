@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 const COLUMNS = [
   {
     title: 'To Do',
@@ -30,6 +32,7 @@ const TAG_COLORS: Record<string, string> = {
 }
 
 export function KanbanMockup() {
+  const { t } = useTranslation()
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-border/60 bg-background shadow-2xl shadow-indigo-500/10">
       {/* Window chrome */}
@@ -89,8 +92,8 @@ export function KanbanMockup() {
                 </div>
               </div>
             ))}
-            <button className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] text-muted-foreground hover:bg-muted/60 transition-colors">
-              <span className="text-base leading-none">+</span> Добавить
+            <button type="button" className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] text-muted-foreground hover:bg-muted/60 transition-colors">
+              <span className="text-base leading-none">+</span> {t('common.add')}
             </button>
           </div>
         ))}

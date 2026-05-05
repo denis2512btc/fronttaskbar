@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Loader2 } from 'lucide-react'
 import {
   Dialog,
@@ -30,6 +31,7 @@ export function ColumnDeleteConfirmDialog({
   taskCount,
   onDeleted,
 }: ColumnDeleteConfirmDialogProps) {
+  const { t } = useTranslation()
   const deleteMutation = useDeleteBoardColumnMutation(boardId)
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export function ColumnDeleteConfirmDialog({
     })
   }
 
-  const titleLabel = columnTitle.trim() || 'Без названия'
+  const titleLabel = columnTitle.trim() || t('common.untitled')
 
   return (
     <Dialog
@@ -59,21 +61,18 @@ export function ColumnDeleteConfirmDialog({
     >
       <DialogContent className="sm:max-w-sm" showCloseButton={!deleteMutation.isPending}>
         <DialogHeader>
-          <DialogTitle className="text-lg">Удалить колонку?</DialogTitle>
+          <DialogTitle className="text-lg">{t('columnDelete.title')}</DialogTitle>
           <DialogDescription>
             {taskCount === 0 ?
-              <>Колонка «{titleLabel}» будет удалена навсегда. В колонке нет карточек.</>
-            : <>
-                Колонка «{titleLabel}» и все карточки в ней ({taskCount}&nbsp;шт.) будут удалены навсегда без
-                восстановления.
-              </>}
+              t('columnDelete.descEmpty', { title: titleLabel })
+            : t('columnDelete.descWithTasks', { title: titleLabel, count: taskCount })}
           </DialogDescription>
         </DialogHeader>
         {deleteMutation.isError ?
           <p className="text-xs text-destructive">
             {deleteMutation.error instanceof Error ?
               deleteMutation.error.message
-            : 'Не удалось удалить колонку'}
+            : t('columnDelete.deleteError')}
           </p>
         : null}
         <DialogFooter className="gap-2 border-0 bg-transparent p-0 sm:justify-end">
@@ -83,7 +82,7 @@ export function ColumnDeleteConfirmDialog({
             disabled={deleteMutation.isPending}
             onClick={() => onOpenChange(false)}
           >
-            Отмена
+            {t('common.cancel')}
           </Button>
           <Button
             type="button"
@@ -95,7 +94,7 @@ export function ColumnDeleteConfirmDialog({
             {deleteMutation.isPending ?
               <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
             : null}
-            Удалить навсегда
+            {t('common.deleteForever')}
           </Button>
         </DialogFooter>
       </DialogContent>

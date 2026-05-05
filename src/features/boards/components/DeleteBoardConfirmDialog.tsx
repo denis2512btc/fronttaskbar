@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Loader2 } from 'lucide-react'
 import {
   Dialog,
@@ -26,6 +27,7 @@ export function DeleteBoardConfirmDialog({
   boardTitle,
   onDeleted,
 }: DeleteBoardConfirmDialogProps) {
+  const { t } = useTranslation()
   const deleteBoardMutation = useDeleteBoardMutation()
 
   useEffect(() => {
@@ -42,6 +44,8 @@ export function DeleteBoardConfirmDialog({
     })
   }
 
+  const titleForDesc = boardTitle?.trim() || t('boardDelete.untitled')
+
   return (
     <Dialog
       open={open}
@@ -53,17 +57,16 @@ export function DeleteBoardConfirmDialog({
     >
       <DialogContent className="sm:max-w-sm" showCloseButton={!deleteBoardMutation.isPending}>
         <DialogHeader>
-          <DialogTitle className="text-lg">Удалить доску?</DialogTitle>
+          <DialogTitle className="text-lg">{t('boardDelete.title')}</DialogTitle>
           <DialogDescription>
-            Доска «{boardTitle ?? 'без названия'}» и все связанные данные будут удалены без возможности
-            восстановления.
+            {t('boardDelete.description', { title: titleForDesc })}
           </DialogDescription>
         </DialogHeader>
         {deleteBoardMutation.isError ? (
           <p className="text-xs text-destructive">
             {deleteBoardMutation.error instanceof Error
               ? deleteBoardMutation.error.message
-              : 'Не удалось удалить доску'}
+              : t('boardDelete.deleteError')}
           </p>
         ) : null}
         <DialogFooter className="gap-2 border-0 bg-transparent p-0 sm:justify-end">
@@ -73,7 +76,7 @@ export function DeleteBoardConfirmDialog({
             disabled={deleteBoardMutation.isPending}
             onClick={() => onOpenChange(false)}
           >
-            Отмена
+            {t('common.cancel')}
           </Button>
           <Button
             type="button"
@@ -85,7 +88,7 @@ export function DeleteBoardConfirmDialog({
             {deleteBoardMutation.isPending ? (
               <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
             ) : null}
-            Удалить навсегда
+            {t('common.deleteForever')}
           </Button>
         </DialogFooter>
       </DialogContent>

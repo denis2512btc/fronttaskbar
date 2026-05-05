@@ -1,4 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { LayoutDashboard, Plus, Settings } from 'lucide-react'
 import { BoardsSidebarList } from '@/features/boards/components/BoardsSidebarList'
 import { CreateBoardDialog } from '@/features/boards/components/CreateBoardDialog'
@@ -8,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { AppNavbar } from './AppNavbar'
 
 export function AppLayout() {
+  const { t } = useTranslation()
   const { sidebarOpen, toggleSidebar, openCreateBoardDialog } = useUIStore()
   const { pathname } = useLocation()
   const { user } = useAuthSession()
@@ -41,12 +43,12 @@ export function AppLayout() {
                 )}
               >
                 <LayoutDashboard className="size-4 shrink-0" />
-                Обзор
+                {t('layout.overview')}
               </Link>
 
               <div className="px-3 pt-2">
                 <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Доски
+                  {t('layout.boardsSection')}
                 </p>
                 <BoardsSidebarList />
               </div>
@@ -57,7 +59,7 @@ export function AppLayout() {
                 className="mx-1 mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <Plus className="size-4 shrink-0" />
-                Новая доска
+                {t('layout.newBoard')}
               </button>
 
               <div className="flex-1" />
@@ -72,7 +74,7 @@ export function AppLayout() {
                 )}
               >
                 <Settings className="size-4 shrink-0" />
-                Настройки
+                {t('layout.settings')}
               </Link>
             </nav>
           </aside>

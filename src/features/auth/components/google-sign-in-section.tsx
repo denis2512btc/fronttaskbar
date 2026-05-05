@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Loader2 } from 'lucide-react'
 import { signInWithGoogle } from '@/features/auth/api/auth-api'
 
@@ -39,6 +40,7 @@ export function GoogleSignInSection({
   onOAuthError,
   dividerBackgroundClass = 'bg-popover',
 }: GoogleSignInSectionProps) {
+  const { t } = useTranslation()
   const [pending, setPending] = useState(false)
 
   const handleClick = async () => {
@@ -47,7 +49,7 @@ export function GoogleSignInSection({
       await signInWithGoogle()
     } catch (err) {
       setPending(false)
-      onOAuthError(err instanceof Error ? err.message : 'Google sign-in failed')
+      onOAuthError(err instanceof Error ? err.message : t('auth.googleSignInFailed'))
     }
   }
 
@@ -58,17 +60,17 @@ export function GoogleSignInSection({
         onClick={() => void handleClick()}
         disabled={pending}
         className="flex h-9 w-full items-center justify-center gap-2.5 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted/80 active:scale-[0.98] disabled:opacity-60"
-        aria-label="Sign in with Google"
+        aria-label={t('auth.googleAria')}
       >
         {pending ? (
           <Loader2 className="size-5 shrink-0 animate-spin text-muted-foreground" aria-hidden />
         ) : (
           <GoogleIcon />
         )}
-        Continue with Google
+        {t('auth.continueGoogle')}
       </button>
       <DividerWithLabel dividerBackgroundClass={dividerBackgroundClass}>
-        or with email
+        {t('auth.orWithEmail')}
       </DividerWithLabel>
     </div>
   )
