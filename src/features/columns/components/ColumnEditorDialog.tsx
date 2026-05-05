@@ -25,7 +25,7 @@ export type ColumnEditorDialogProps = {
   onOpenChange: (open: boolean) => void
   mode: 'create' | 'edit'
   initial?: Pick<ColumnEditorFormInput, 'title' | 'color'>
-  onSubmit: (data: ColumnEditorFormInput) => void
+  onSubmit: (data: ColumnEditorFormInput) => void | Promise<void>
 }
 
 export function ColumnEditorDialog({
@@ -70,9 +70,13 @@ export function ColumnEditorDialog({
     }
   }
 
-  const onSubmit = (data: ColumnEditorFormInput) => {
-    onSubmitProp(data)
-    handleOpenChange(false)
+  const onSubmit = async (data: ColumnEditorFormInput) => {
+    try {
+      await Promise.resolve(onSubmitProp(data))
+      handleOpenChange(false)
+    } catch {
+      /* ошибка сохранения в Supabase — форма остаётся открытой */
+    }
   }
 
   const isEdit = mode === 'edit'
@@ -89,8 +93,8 @@ export function ColumnEditorDialog({
           </DialogTitle>
           <DialogDescription>
             {isEdit
-              ? 'Измените название и цвет индикатора колонки. Изменения только на этой странице.'
-              : 'Укажите название и цвет новой колонки. Данные не сохраняются на сервере.'}
+              ? 'Измените название и цвет индикатора колонки. Данные сохраняются в Supabase.'
+              : 'Укажите название и цвет новой колонки. Данные сохраняются в Supabase.'}
           </DialogDescription>
         </DialogHeader>
 

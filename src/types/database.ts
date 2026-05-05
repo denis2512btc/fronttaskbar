@@ -87,6 +87,102 @@ export interface Database {
           },
         ]
       }
+      board_columns: {
+        Row: {
+          id: string
+          board_id: string
+          title: string
+          color: string
+          position: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          board_id: string
+          title: string
+          color: string
+          position?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          board_id?: string
+          title?: string
+          color?: string
+          position?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'board_columns_board_id_fkey'
+            columns: ['board_id']
+            isOneToOne: false
+            referencedRelation: 'boards'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          id: string
+          board_id: string
+          column_id: string
+          title: string
+          description: string
+          color: string
+          assignee_id: string | null
+          position: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          board_id: string
+          column_id: string
+          title: string
+          description?: string
+          color: string
+          assignee_id?: string | null
+          position?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          board_id?: string
+          column_id?: string
+          title?: string
+          description?: string
+          color?: string
+          assignee_id?: string | null
+          position?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'tasks_board_id_fkey'
+            columns: ['board_id']
+            isOneToOne: false
+            referencedRelation: 'boards'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'tasks_column_id_fkey'
+            columns: ['column_id']
+            isOneToOne: false
+            referencedRelation: 'board_columns'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'tasks_assignee_id_fkey'
+            columns: ['assignee_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
