@@ -1,159 +1,136 @@
-import { Loader2, Plus, MoreHorizontal, Zap, ChevronLeft } from 'lucide-react'
+import { useState } from 'react'
+import { Loader2, Plus, MoreHorizontal, ChevronLeft } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session'
 import { useBoardQuery } from '@/features/boards/hooks/use-boards-queries'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
-
-type Priority = 'low' | 'medium' | 'high' | 'urgent'
+import { ColumnEditorDialog } from '@/features/columns/components/ColumnEditorDialog'
+import type { ColumnColorPreset } from '@/features/columns/constants/column-color-presets'
+import type { ColumnEditorFormInput } from '@/features/columns/validations/column-editor'
+import { TaskCreateDialog, type TaskCardDraft } from '@/features/tasks/components/TaskCreateDialog'
+import { MOCK_BOARD_ASSIGNEES } from '@/features/tasks/constants/mock-assignees'
+import { TASK_CARD_LEFT_BORDER } from '@/features/tasks/constants/task-card-accent'
 
 interface Task {
   id: string
   title: string
-  tags: string[]
-  priority: Priority
-  avatars: number
-  subtasks?: { done: number; total: number }
+  description: string
+  color: ColumnColorPreset
+  assigneeId: string | null
 }
 
 interface Column {
   id: string
   title: string
-  color: string
+  color: ColumnColorPreset
   tasks: Task[]
 }
 
-const PRIORITY_COLORS: Record<Priority, string> = {
-  low: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-  medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
-  high: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400',
-  urgent: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
-}
-
-const PRIORITY_LABELS: Record<Priority, string> = {
-  low: 'Низкий',
-  medium: 'Средний',
-  high: 'Высокий',
-  urgent: 'Срочно',
-}
-
-const TAG_COLORS: Record<string, string> = {
-  Design: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
-  Frontend: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  AI: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
-  DevOps: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-  Backend: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300',
-  QA: 'bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300',
-}
-
-const COLUMNS: Column[] = [
-  {
-    id: 'todo',
-    title: 'К выполнению',
-    color: 'bg-slate-400',
-    tasks: [
-      { id: 't1', title: 'Проработать дизайн онбординга', tags: ['Design'], priority: 'medium', avatars: 1 },
-      { id: 't2', title: 'Написать unit-тесты для API', tags: ['Backend', 'QA'], priority: 'high', avatars: 2, subtasks: { done: 0, total: 5 } },
-      { id: 't3', title: 'Настроить CI/CD pipeline', tags: ['DevOps'], priority: 'low', avatars: 1 },
-    ],
-  },
-  {
-    id: 'in-progress',
-    title: 'В работе',
-    color: 'bg-indigo-500',
-    tasks: [
-      { id: 't4', title: 'Собрать секции лендинга', tags: ['Frontend', 'Design'], priority: 'high', avatars: 2, subtasks: { done: 3, total: 6 } },
-      { id: 't5', title: 'Интегрировать AI-разбивку задач', tags: ['AI', 'Backend'], priority: 'urgent', avatars: 1, subtasks: { done: 1, total: 4 } },
-    ],
-  },
-  {
-    id: 'review',
-    title: 'Ревью',
-    color: 'bg-amber-400',
-    tasks: [
-      { id: 't6', title: 'Ревью дизайн-системы', tags: ['Design'], priority: 'medium', avatars: 3 },
-    ],
-  },
-  {
-    id: 'done',
-    title: 'Готово',
-    color: 'bg-emerald-500',
-    tasks: [
-      { id: 't7', title: 'Настроить Supabase Auth', tags: ['Backend'], priority: 'high', avatars: 1, subtasks: { done: 4, total: 4 } },
-      { id: 't8', title: 'Telegram-бот уведомления', tags: ['Backend', 'DevOps'], priority: 'medium', avatars: 2 },
-    ],
-  },
-]
-
 function TaskCard({ task }: { task: Task }) {
+  const assignee = task.assigneeId
+    ? MOCK_BOARD_ASSIGNEES.find((a) => a.id === task.assigneeId)
+    : undefined
+  const leftBorder = TASK_CARD_LEFT_BORDER[task.color]
+
   return (
-    <div className="group rounded-xl border border-border/60 bg-card p-3.5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer">
-      {/* Tags */}
-      {task.tags.length > 0 && (
-        <div className="mb-2.5 flex flex-wrap gap-1">
-          {task.tags.map((tag) => (
-            <span
-              key={tag}
-              className={cn(
-                'rounded-md px-1.5 py-0.5 text-[10px] font-semibold',
-                TAG_COLORS[tag] ?? 'bg-muted text-muted-foreground',
-              )}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+    <div
+      className={cn(
+        'group rounded-xl border border-border/60 border-l-4 bg-card p-3.5 pl-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md cursor-pointer',
+        leftBorder,
       )}
-
-      {/* Title */}
+    >
       <p className="text-sm font-medium leading-snug text-foreground">{task.title}</p>
-
-      {/* Subtasks progress */}
-      {task.subtasks && (
-        <div className="mt-2.5">
-          <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground">
-            <span>Подзадачи</span>
-            <span>{task.subtasks.done}/{task.subtasks.total}</span>
-          </div>
-          <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-indigo-500 transition-all"
-              style={{ width: `${(task.subtasks.done / task.subtasks.total) * 100}%` }}
-            />
-          </div>
-        </div>
+      {task.description.length > 0 && (
+        <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-muted-foreground">
+          {task.description}
+        </p>
       )}
-
-      {/* Footer */}
-      <div className="mt-3 flex items-center justify-between">
-        <span className={cn('rounded-md px-1.5 py-0.5 text-[10px] font-medium', PRIORITY_COLORS[task.priority])}>
-          {PRIORITY_LABELS[task.priority]}
-        </span>
-        <div className="flex items-center gap-1.5">
-          <button
-            className="hidden items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted group-hover:flex"
-            title="AI-разбивка"
-          >
-            <Zap className="size-3 text-indigo-500" />
-            AI
-          </button>
-          <div className="flex -space-x-1.5">
-            {Array.from({ length: Math.min(task.avatars, 3) }).map((_, i) => (
-              <span
-                key={i}
-                className="flex size-5 items-center justify-center rounded-full border border-card bg-gradient-to-br from-indigo-400 to-violet-500 text-[8px] font-bold text-white"
-              >
-                {String.fromCharCode(65 + i)}
-              </span>
-            ))}
+      <div className="mt-3 flex items-center justify-end gap-2">
+        {assignee ? (
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                'flex size-6 shrink-0 items-center justify-center rounded-full border border-card text-[9px] font-bold text-white',
+                assignee.avatarClass,
+              )}
+              title={assignee.displayName}
+            >
+              {assignee.initials}
+            </span>
+            <span className="max-w-[120px] truncate text-[11px] text-muted-foreground">
+              {assignee.displayName}
+            </span>
           </div>
-        </div>
+        ) : (
+          <span className="text-[11px] text-muted-foreground">Без ответственного</span>
+        )}
       </div>
     </div>
   )
 }
 
 function BoardKanbanDemo({ boardTitle }: { boardTitle: string }) {
+  const [columns, setColumns] = useState<Column[]>([])
+  const [columnEditorOpen, setColumnEditorOpen] = useState(false)
+  const [columnEditorMode, setColumnEditorMode] = useState<'create' | 'edit'>('create')
+  const [editingColumnId, setEditingColumnId] = useState<string | null>(null)
+
+  const [taskCreateOpen, setTaskCreateOpen] = useState(false)
+  const [taskCreateColumnId, setTaskCreateColumnId] = useState<string | null>(null)
+
+  const editingColumn = editingColumnId ? columns.find((c) => c.id === editingColumnId) : undefined
+
+  const openCreateColumn = () => {
+    setColumnEditorMode('create')
+    setEditingColumnId(null)
+    setColumnEditorOpen(true)
+  }
+
+  const openEditColumn = (columnId: string) => {
+    setColumnEditorMode('edit')
+    setEditingColumnId(columnId)
+    setColumnEditorOpen(true)
+  }
+
+  const openTaskCreate = (columnId: string) => {
+    setTaskCreateColumnId(columnId)
+    setTaskCreateOpen(true)
+  }
+
+  const handleColumnEditorSubmit = (data: ColumnEditorFormInput) => {
+    const title = data.title.trim()
+    if (columnEditorMode === 'create') {
+      setColumns((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), title, color: data.color, tasks: [] },
+      ])
+      return
+    }
+    if (!editingColumnId) return
+    setColumns((prev) =>
+      prev.map((c) =>
+        c.id === editingColumnId ? { ...c, title, color: data.color } : c,
+      ),
+    )
+  }
+
+  const handleTaskCreateSubmit = (data: TaskCardDraft) => {
+    if (!taskCreateColumnId) return
+    const task: Task = {
+      id: crypto.randomUUID(),
+      title: data.title,
+      description: data.description,
+      color: data.color,
+      assigneeId: data.assigneeId,
+    }
+    setColumns((prev) =>
+      prev.map((c) =>
+        c.id === taskCreateColumnId ? { ...c, tasks: [...c.tasks, task] } : c,
+      ),
+    )
+  }
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Board header */}
@@ -171,20 +148,30 @@ function BoardKanbanDemo({ boardTitle }: { boardTitle: string }) {
         </div>
         <div className="flex items-center gap-2">
           <div className="flex -space-x-1.5">
-            {['from-indigo-400 to-violet-500', 'from-blue-400 to-indigo-500', 'from-violet-400 to-purple-500'].map((g, i) => (
+            {MOCK_BOARD_ASSIGNEES.slice(0, 3).map((u) => (
               <span
-                key={i}
-                className={`flex size-7 items-center justify-center rounded-full border-2 border-background bg-gradient-to-br ${g} text-[10px] font-bold text-white`}
+                key={u.id}
+                title={u.displayName}
+                className={cn(
+                  'flex size-7 items-center justify-center rounded-full border-2 border-background text-[10px] font-bold text-white',
+                  u.avatarClass,
+                )}
               >
-                {String.fromCharCode(65 + i)}
+                {u.initials}
               </span>
             ))}
           </div>
-          <button className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
+          >
             <Plus className="size-3.5" />
             Участник
           </button>
-          <button className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted">
+          <button
+            type="button"
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted"
+          >
             <MoreHorizontal className="size-4" />
           </button>
         </div>
@@ -192,8 +179,8 @@ function BoardKanbanDemo({ boardTitle }: { boardTitle: string }) {
 
       {/* Columns */}
       <div className="flex flex-1 gap-4 overflow-x-auto p-6">
-        {COLUMNS.map((col) => (
-          <div key={col.id} className="flex w-72 shrink-0 flex-col gap-3">
+        {columns.map((col) => (
+          <div key={col.id} className="group flex w-72 shrink-0 flex-col gap-3">
             {/* Column header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -203,7 +190,12 @@ function BoardKanbanDemo({ boardTitle }: { boardTitle: string }) {
                   {col.tasks.length}
                 </span>
               </div>
-              <button className="flex size-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition hover:bg-muted group-hover:opacity-100 hover:opacity-100">
+              <button
+                type="button"
+                aria-label="Редактировать колонку"
+                onClick={() => openEditColumn(col.id)}
+                className="flex size-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition hover:bg-muted group-hover:opacity-100 hover:opacity-100"
+              >
                 <MoreHorizontal className="size-3.5" />
               </button>
             </div>
@@ -215,20 +207,47 @@ function BoardKanbanDemo({ boardTitle }: { boardTitle: string }) {
               ))}
             </div>
 
-            {/* Add task */}
-            <button className="flex items-center gap-2 rounded-xl border border-dashed border-border/60 px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-indigo-400 hover:bg-indigo-50/40 hover:text-indigo-600 dark:hover:bg-indigo-950/20">
+            <button
+              type="button"
+              onClick={() => openTaskCreate(col.id)}
+              className="flex items-center gap-2 rounded-xl border border-dashed border-border/60 px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-indigo-400 hover:bg-indigo-50/40 hover:text-indigo-600 dark:hover:bg-indigo-950/20 dark:hover:text-indigo-400"
+            >
               <Plus className="size-4" />
-              Добавить задачу
+              Создать карточку
             </button>
           </div>
         ))}
 
-        {/* Add column */}
-        <button className="flex h-fit w-72 shrink-0 items-center gap-2 rounded-xl border border-dashed border-border/60 px-4 py-3 text-sm text-muted-foreground transition-colors hover:border-indigo-400 hover:text-indigo-600">
+        <button
+          type="button"
+          onClick={openCreateColumn}
+          className="flex h-fit w-72 shrink-0 items-center gap-2 rounded-xl border border-dashed border-border/60 px-4 py-3 text-sm text-muted-foreground transition-colors hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+        >
           <Plus className="size-4" />
           Добавить колонку
         </button>
       </div>
+
+      <ColumnEditorDialog
+        open={columnEditorOpen}
+        onOpenChange={setColumnEditorOpen}
+        mode={columnEditorMode}
+        initial={
+          columnEditorMode === 'edit' && editingColumn
+            ? { title: editingColumn.title, color: editingColumn.color }
+            : undefined
+        }
+        onSubmit={handleColumnEditorSubmit}
+      />
+
+      <TaskCreateDialog
+        open={taskCreateOpen}
+        onOpenChange={(open) => {
+          setTaskCreateOpen(open)
+          if (!open) setTaskCreateColumnId(null)
+        }}
+        onSubmit={handleTaskCreateSubmit}
+      />
     </div>
   )
 }
