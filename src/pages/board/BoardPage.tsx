@@ -236,7 +236,7 @@ function BoardKanbanDemo({ boardTitle }: { boardTitle: string }) {
 export function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>()
   const { user, loading } = useAuthSession()
-  const boardQuery = useBoardQuery(user?.id, boardId)
+  const boardQuery = useBoardQuery(boardId, user?.id)
 
   if (!isSupabaseConfigured) {
     return (

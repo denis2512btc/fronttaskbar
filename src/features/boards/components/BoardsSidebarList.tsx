@@ -15,8 +15,11 @@ export function BoardsSidebarList() {
   const activeBoardId = boardMatch?.params.boardId
 
   const { data: boards, isLoading, isError, error } = useBoardsQuery(user?.id)
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [settingsBoardTitle, setSettingsBoardTitle] = useState<string | undefined>(undefined)
+  const [settingsTarget, setSettingsTarget] = useState<{
+    boardId: string
+    boardTitle: string
+    ownerId: string
+  } | null>(null)
 
   if (!isSupabaseConfigured) {
     return (
@@ -55,21 +58,29 @@ export function BoardsSidebarList() {
     )
   }
 
+  const isOwner = (board: { owner_id: string }) => user?.id === board.owner_id
+
   return (
     <>
       <BoardSettingsDialog
-        open={settingsOpen}
-        onOpenChange={(open) => {
-          setSettingsOpen(open)
-          if (!open) setSettingsBoardTitle(undefined)
+        open={settingsTarget !== null}
+        onOpenChange={(next) => {
+          if (!next) setSettingsTarget(null)
         }}
-        boardTitle={settingsBoardTitle}
+        boardId={settingsTarget?.boardId ?? ''}
+        boardTitle={settingsTarget?.boardTitle}
+        ownerId={settingsTarget?.ownerId ?? ''}
+        currentUserId={user?.id ?? ''}
+        canManageMembers={
+          settingsTarget !== null && user?.id !== undefined && settingsTarget.ownerId === user.id
+        }
       />
       <div className="flex flex-col gap-0.5">
         {boards.map((board) => {
           const href = `/board/${board.id}`
           const active = activeBoardId === board.id
           const gradient = boardGradientFromId(board.id)
+          const showSettings = isOwner(board)
           return (
             <div
               key={board.id}
@@ -95,22 +106,27 @@ export function BoardsSidebarList() {
                 </span>
                 <span className="truncate">{board.title}</span>
               </Link>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setSettingsBoardTitle(board.title)
-                  setSettingsOpen(true)
-                }}
-                className={cn(
-                  'mr-1 flex size-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-background/70 hover:text-foreground',
-                  active ? 'text-indigo-700 opacity-100 dark:text-indigo-300' : 'text-muted-foreground opacity-70 group-hover/item:opacity-100',
-                )}
-                aria-label={`Настройки доски ${board.title}`}
-              >
-                <Settings className="size-4" />
-              </button>
+              {showSettings ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setSettingsTarget({
+                      boardId: board.id,
+                      boardTitle: board.title,
+                      ownerId: board.owner_id,
+                    })
+                  }}
+                  className={cn(
+                    'mr-1 flex size-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-background/70 hover:text-foreground',
+                    active ? 'text-indigo-700 opacity-100 dark:text-indigo-300' : 'text-muted-foreground opacity-70 group-hover/item:opacity-100',
+                  )}
+                  aria-label={`Настройки доски ${board.title}`}
+                >
+                  <Settings className="size-4" />
+                </button>
+              ) : null}
             </div>
           )
         })}
