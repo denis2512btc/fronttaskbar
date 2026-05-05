@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { boardGradientFromId } from '@/features/boards/utils/board-accent'
+import { DeleteBoardConfirmDialog } from '@/features/boards/components/DeleteBoardConfirmDialog'
 import {
   useAddBoardMemberMutation,
   useBoardMembersQuery,
@@ -53,11 +54,13 @@ export function BoardSettingsDialog({
   const searchId = `${baseId}-search`
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   useEffect(() => {
     if (!open) {
       setSearchInput('')
       setDebouncedSearch('')
+      setDeleteConfirmOpen(false)
     }
   }, [open])
 
@@ -105,8 +108,9 @@ export function BoardSettingsDialog({
   const dialogActive = open && Boolean(boardId)
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] gap-4 overflow-y-auto sm:max-w-md">
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-h-[90vh] gap-4 overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lg">Настройки доски</DialogTitle>
           <DialogDescription>
@@ -321,8 +325,36 @@ export function BoardSettingsDialog({
               </div>
             </section>
           ) : null}
+
+          {canManageMembers ? (
+            <section className="flex flex-col gap-2 rounded-xl border border-destructive/25 bg-destructive/5 p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-destructive">
+                Опасная зона
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Удаление доски необратимо: колонки и задачи будут удалены вместе с доской.
+              </p>
+              <Button
+                type="button"
+                variant="destructive"
+                className="w-full sm:w-auto"
+                onClick={() => setDeleteConfirmOpen(true)}
+              >
+                Удалить доску
+              </Button>
+            </section>
+          ) : null}
         </div>
       </DialogContent>
     </Dialog>
+
+      <DeleteBoardConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        boardId={boardId}
+        boardTitle={boardTitle}
+        onDeleted={() => onOpenChange(false)}
+      />
+    </>
   )
 }

@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { KanbanSquare, Settings } from 'lucide-react'
+import { KanbanSquare, Settings, Trash2 } from 'lucide-react'
 import { Link, matchPath, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session'
 import { BoardSettingsDialog } from '@/features/boards/components/BoardSettingsDialog'
+import { DeleteBoardConfirmDialog } from '@/features/boards/components/DeleteBoardConfirmDialog'
 import { useBoardsQuery } from '@/features/boards/hooks/use-boards-queries'
 import { boardGradientFromId } from '@/features/boards/utils/board-accent'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
@@ -19,6 +20,10 @@ export function BoardsSidebarList() {
     boardId: string
     boardTitle: string
     ownerId: string
+  } | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{
+    boardId: string
+    boardTitle: string
   } | null>(null)
 
   if (!isSupabaseConfigured) {
@@ -75,6 +80,17 @@ export function BoardsSidebarList() {
           settingsTarget !== null && user?.id !== undefined && settingsTarget.ownerId === user.id
         }
       />
+      <DeleteBoardConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(next) => {
+          if (!next) setDeleteTarget(null)
+        }}
+        boardId={deleteTarget?.boardId ?? ''}
+        boardTitle={deleteTarget?.boardTitle}
+        onDeleted={(id) => {
+          setSettingsTarget((prev) => (prev?.boardId === id ? null : prev))
+        }}
+      />
       <div className="flex flex-col gap-0.5">
         {boards.map((board) => {
           const href = `/board/${board.id}`
@@ -107,25 +123,44 @@ export function BoardsSidebarList() {
                 <span className="truncate">{board.title}</span>
               </Link>
               {showSettings ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setSettingsTarget({
-                      boardId: board.id,
-                      boardTitle: board.title,
-                      ownerId: board.owner_id,
-                    })
-                  }}
-                  className={cn(
-                    'mr-1 flex size-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-background/70 hover:text-foreground',
-                    active ? 'text-indigo-700 opacity-100 dark:text-indigo-300' : 'text-muted-foreground opacity-70 group-hover/item:opacity-100',
-                  )}
-                  aria-label={`Настройки доски ${board.title}`}
-                >
-                  <Settings className="size-4" />
-                </button>
+                <div className="mr-1 flex shrink-0 items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setSettingsTarget({
+                        boardId: board.id,
+                        boardTitle: board.title,
+                        ownerId: board.owner_id,
+                      })
+                    }}
+                    className={cn(
+                      'flex size-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-background/70 hover:text-foreground',
+                      active
+                        ? 'text-indigo-700 opacity-100 dark:text-indigo-300'
+                        : 'text-muted-foreground opacity-70 group-hover/item:opacity-100',
+                    )}
+                    aria-label={`Настройки доски ${board.title}`}
+                  >
+                    <Settings className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setDeleteTarget({ boardId: board.id, boardTitle: board.title })
+                    }}
+                    className={cn(
+                      'flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background/70 hover:text-destructive',
+                      active ? 'opacity-100' : 'opacity-70 group-hover/item:opacity-100',
+                    )}
+                    aria-label={`Удалить доску ${board.title}`}
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
               ) : null}
             </div>
           )

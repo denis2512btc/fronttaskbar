@@ -168,3 +168,10 @@ export async function removeBoardMember(boardId: string, userId: string): Promis
 
   if (error) throw new Error(error.message)
 }
+
+export async function deleteBoard(boardId: string): Promise<void> {
+  ensureConfigured()
+  const { error } = await supabase.from('boards').delete().eq('id', boardId)
+
+  if (error) throw new Error(error.message)
+}

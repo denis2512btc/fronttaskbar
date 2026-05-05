@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 import {
   addBoardMember,
   createBoard,
+  deleteBoard,
   fetchAccessibleBoardsForUser,
   fetchBoardById,
   fetchBoardMembers,
@@ -109,6 +110,24 @@ export function useRemoveBoardMemberMutation(boardId: string | undefined) {
       if (boardId) {
         await queryClient.invalidateQueries({ queryKey: boardQueryKeys.members(boardId) })
         await queryClient.invalidateQueries({ queryKey: boardQueryKeys.detail(boardId) })
+      }
+    },
+  })
+}
+
+export function useDeleteBoardMutation() {
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  return useMutation({
+    mutationFn: (boardId: string) => deleteBoard(boardId),
+    onSuccess: async (_, boardId) => {
+      await queryClient.invalidateQueries({ queryKey: ['boards'] })
+      await queryClient.invalidateQueries({ queryKey: boardQueryKeys.detail(boardId) })
+      await queryClient.invalidateQueries({ queryKey: boardQueryKeys.members(boardId) })
+      if (location.pathname === `/board/${boardId}`) {
+        navigate('/')
       }
     },
   })
