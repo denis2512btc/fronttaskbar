@@ -1,7 +1,7 @@
-import { useEffect, useId, useMemo } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ClipboardList } from 'lucide-react'
+import { ClipboardList, Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -48,6 +48,7 @@ type TaskCardDialogFormProps = {
   assigneeOptions: TaskAssigneeOption[]
   onSubmitSuccess: (data: TaskCardDraft) => void | Promise<void>
   onCancel: () => void
+  onRequestDelete?: () => void
 }
 
 function TaskCardDialogForm({
@@ -56,6 +57,7 @@ function TaskCardDialogForm({
   assigneeOptions,
   onSubmitSuccess,
   onCancel,
+  onRequestDelete,
 }: TaskCardDialogFormProps) {
   const baseId = useId()
   const titleFieldId = `${baseId}-title`
@@ -179,6 +181,19 @@ function TaskCardDialogForm({
         )}
       </div>
 
+      {isEdit && onRequestDelete ?
+        <div className="border-t border-border/60 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={onRequestDelete}
+          >
+            Удалить карточку…
+          </Button>
+        </div>
+      : null}
+
       <DialogFooter className="gap-2 sm:gap-2">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Отмена
@@ -202,6 +217,8 @@ export type TaskCardDialogProps = {
   assigneeOptions: TaskAssigneeOption[]
   initial?: TaskCardDraft | null
   onSubmit: (data: TaskCardDraft) => void | Promise<void>
+  /** Режим редактирования: удаление задачи после подтверждения */
+  onDeleteTask?: () => void | Promise<void>
 }
 
 export function TaskCardDialog({
@@ -211,7 +228,11 @@ export function TaskCardDialog({
   assigneeOptions,
   initial,
   onSubmit: onSubmitProp,
+  onDeleteTask,
 }: TaskCardDialogProps) {
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  const [deletePending, setDeletePending] = useState(false)
+
   const assigneeKey = useMemo(
     () => [...assigneeOptions.map((o) => o.value)].sort().join('|'),
     [assigneeOptions],
@@ -219,13 +240,30 @@ export function TaskCardDialog({
 
   const handleOpenChange = (next: boolean) => {
     onOpenChange(next)
+    if (!next) setConfirmDeleteOpen(false)
   }
 
   const isEdit = mode === 'edit'
+  const previewTitle = (initial?.title ?? '').trim() || 'Без названия'
+
+  const handleConfirmDelete = async () => {
+    if (!onDeleteTask) return
+    setDeletePending(true)
+    try {
+      await onDeleteTask()
+      setConfirmDeleteOpen(false)
+      handleOpenChange(false)
+    } catch {
+      /* ошибку показывает родитель */
+    } finally {
+      setDeletePending(false)
+    }
+  }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <span className="mb-1 flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600">
             <ClipboardList className="size-4 text-white" strokeWidth={2} />
@@ -247,6 +285,13 @@ export function TaskCardDialog({
             initial={initial}
             assigneeOptions={assigneeOptions}
             onCancel={() => handleOpenChange(false)}
+            onRequestDelete={
+              isEdit && onDeleteTask ?
+                () => {
+                  setConfirmDeleteOpen(true)
+                }
+              : undefined
+            }
             onSubmitSuccess={async (data) => {
               try {
                 await onSubmitProp(data)
@@ -257,7 +302,48 @@ export function TaskCardDialog({
             }}
           />
         ) : null}
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={confirmDeleteOpen}
+        onOpenChange={(next) => {
+          if (!deletePending) setConfirmDeleteOpen(next)
+        }}
+      >
+        <DialogContent className="sm:max-w-sm" showCloseButton={!deletePending}>
+          <DialogHeader>
+            <DialogTitle className="text-lg">Удалить карточку?</DialogTitle>
+            <DialogDescription>
+              Карточку «{previewTitle}» нельзя будет восстановить.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 border-0 bg-transparent p-0 sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={deletePending}
+              onClick={() => setConfirmDeleteOpen(false)}
+            >
+              Отмена
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={deletePending || !onDeleteTask}
+              className="gap-2"
+              onClick={handleConfirmDelete}
+            >
+              {deletePending ?
+                <>
+                  <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+                  Удаление…
+                </>
+              : 'Удалить навсегда'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

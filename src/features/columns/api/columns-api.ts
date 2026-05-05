@@ -107,3 +107,10 @@ export async function updateBoardColumn(params: {
 
   if (error) throw new Error(error.message)
 }
+
+export async function deleteBoardColumn(columnId: string): Promise<void> {
+  ensureConfigured()
+  const { error } = await supabase.from('board_columns').delete().eq('id', columnId)
+
+  if (error) throw new Error(error.message)
+}

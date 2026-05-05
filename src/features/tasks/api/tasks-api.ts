@@ -127,6 +127,13 @@ export async function updateBoardTask(params: {
   if (error) throw new Error(error.message)
 }
 
+export async function deleteBoardTask(taskId: string): Promise<void> {
+  ensureConfigured()
+  const { error } = await supabase.from('tasks').delete().eq('id', taskId)
+
+  if (error) throw new Error(error.message)
+}
+
 /** Droppable id for an empty column (prefix + UUID). */
 export function kanbanColumnDroppableId(columnId: string): string {
   return `column:${columnId}`

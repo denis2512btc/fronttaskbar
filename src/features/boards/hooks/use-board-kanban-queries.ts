@@ -2,12 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 import {
   createBoardColumn,
+  deleteBoardColumn,
   fetchBoardColumns,
   updateBoardColumn,
 } from '@/features/columns/api/columns-api'
 import {
   applyKanbanTaskMoves,
   createBoardTask,
+  deleteBoardTask,
   fetchBoardTasks,
   updateBoardTask,
   type KanbanTaskFromApi,
@@ -65,6 +67,16 @@ export function useUpdateBoardColumnMutation(boardId: string | undefined) {
   })
 }
 
+export function useDeleteBoardColumnMutation(boardId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (columnId: string) => deleteBoardColumn(columnId),
+    onSuccess: async () => {
+      if (boardId) await invalidateBoardKanban(queryClient, boardId)
+    },
+  })
+}
+
 export function useCreateBoardTaskMutation(boardId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
@@ -101,6 +113,16 @@ export function useUpdateBoardTaskMutation(boardId: string | undefined) {
       color: string
       assigneeId: string | null
     }) => updateBoardTask(input),
+    onSuccess: async () => {
+      if (boardId) await invalidateBoardKanban(queryClient, boardId)
+    },
+  })
+}
+
+export function useDeleteBoardTaskMutation(boardId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (taskId: string) => deleteBoardTask(taskId),
     onSuccess: async () => {
       if (boardId) await invalidateBoardKanban(queryClient, boardId)
     },

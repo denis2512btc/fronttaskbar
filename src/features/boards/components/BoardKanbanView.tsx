@@ -19,7 +19,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Loader2, Plus, MoreHorizontal, ChevronLeft } from 'lucide-react'
+import { Loader2, Plus, MoreHorizontal, ChevronLeft, Pencil, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
@@ -31,12 +31,14 @@ import {
   useBoardTasksQuery,
   useCreateBoardColumnMutation,
   useCreateBoardTaskMutation,
+  useDeleteBoardTaskMutation,
   useReorderKanbanTasksMutation,
   useUpdateBoardColumnMutation,
   useUpdateBoardTaskMutation,
 } from '@/features/boards/hooks/use-board-kanban-queries'
 import { boardGradientFromId } from '@/features/boards/utils/board-accent'
 import { ColumnEditorDialog } from '@/features/columns/components/ColumnEditorDialog'
+import { ColumnDeleteConfirmDialog } from '@/features/columns/components/ColumnDeleteConfirmDialog'
 import type { ColumnEditorFormInput } from '@/features/columns/validations/column-editor'
 import type { KanbanColumnFromApi } from '@/features/columns/api/columns-api'
 import {
@@ -229,6 +231,7 @@ export function BoardKanbanView({
   const updateColumn = useUpdateBoardColumnMutation(boardId)
   const createTask = useCreateBoardTaskMutation(boardId)
   const updateTask = useUpdateBoardTaskMutation(boardId)
+  const deleteTask = useDeleteBoardTaskMutation(boardId)
   const reorderTasks = useReorderKanbanTasksMutation(boardId)
 
   const [columnEditorOpen, setColumnEditorOpen] = useState(false)
@@ -248,6 +251,12 @@ export function BoardKanbanView({
   > | null>(null)
   const [activeDragTaskId, setActiveDragTaskId] = useState<string | null>(null)
   const dragSnapshotRef = useRef<Record<string, string[]> | null>(null)
+  const [columnMenuOpenId, setColumnMenuOpenId] = useState<string | null>(null)
+  const [pendingDeleteColumn, setPendingDeleteColumn] = useState<{
+    id: string
+    title: string
+    taskCount: number
+  } | null>(null)
 
   const assigneeOptions: TaskAssigneeOption[] = useMemo(() => {
     const opts: TaskAssigneeOption[] = []
@@ -347,6 +356,20 @@ export function BoardKanbanView({
       : null
 
   const columnIdsOrdered = useMemo(() => columnsWithTasks.map((c) => c.id), [columnsWithTasks])
+
+  useEffect(() => {
+    if (columnMenuOpenId === null) return
+    const handle = (e: PointerEvent) => {
+      const el = e.target as HTMLElement | null
+      if (!el) return
+      const root = el.closest('[data-column-menu-root]') as HTMLElement | null
+      const id = root?.dataset.columnId ?? null
+      if (id === columnMenuOpenId) return
+      setColumnMenuOpenId(null)
+    }
+    document.addEventListener('pointerdown', handle, true)
+    return () => document.removeEventListener('pointerdown', handle, true)
+  }, [columnMenuOpenId])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -479,6 +502,16 @@ export function BoardKanbanView({
     setColumnEditorMode('edit')
     setEditingColumnId(columnId)
     setColumnEditorOpen(true)
+  }
+
+  const handleColumnDeleted = (deletedColumnId: string) => {
+    if (taskDialogColumnId === deletedColumnId) {
+      setTaskDialogOpen(false)
+      setTaskDialogColumnId(null)
+      setTaskDialogTaskId(null)
+      setTaskDialogInitial(null)
+    }
+    setOptimisticColumnItems(null)
   }
 
   const openTaskCreate = (columnId: string) => {
@@ -637,14 +670,61 @@ export function BoardKanbanView({
                           {ids.length}
                         </span>
                       </div>
-                      <button
-                        type="button"
-                        aria-label="Редактировать колонку"
-                        onClick={() => openEditColumn(col.id)}
-                        className="flex size-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition hover:bg-muted group-hover:opacity-100 hover:opacity-100"
+                      <div
+                        className="relative text-right"
+                        data-column-menu-root
+                        data-column-id={col.id}
                       >
-                        <MoreHorizontal className="size-3.5" />
-                      </button>
+                        <button
+                          type="button"
+                          aria-label="Действия с колонкой"
+                          aria-expanded={columnMenuOpenId === col.id}
+                          onClick={() =>
+                            setColumnMenuOpenId((m) => (m === col.id ? null : col.id))
+                          }
+                          className={cn(
+                            'inline-flex size-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition hover:bg-muted group-hover:opacity-100 hover:opacity-100',
+                            columnMenuOpenId === col.id && 'opacity-100',
+                          )}
+                        >
+                          <MoreHorizontal className="size-3.5" />
+                        </button>
+                        {columnMenuOpenId === col.id ?
+                          <div
+                            role="menu"
+                            className="absolute right-0 top-full z-[100] mt-1 w-48 overflow-hidden rounded-xl border border-border/60 bg-popover py-1 text-left shadow-md ring-1 ring-black/5 dark:ring-white/10"
+                          >
+                            <button
+                              type="button"
+                              role="menuitem"
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted"
+                              onClick={() => {
+                                setColumnMenuOpenId(null)
+                                openEditColumn(col.id)
+                              }}
+                            >
+                              <Pencil className="size-3.5 shrink-0 opacity-70" aria-hidden />
+                              Редактировать
+                            </button>
+                            <button
+                              type="button"
+                              role="menuitem"
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
+                              onClick={() => {
+                                setColumnMenuOpenId(null)
+                                setPendingDeleteColumn({
+                                  id: col.id,
+                                  title: col.title,
+                                  taskCount: ids.length,
+                                })
+                              }}
+                            >
+                              <Trash2 className="size-3.5 shrink-0 opacity-70" aria-hidden />
+                              Удалить…
+                            </button>
+                          </div>
+                        : null}
+                      </div>
                     </div>
 
                     <SortableContext items={ids} strategy={verticalListSortingStrategy}>
@@ -729,6 +809,18 @@ export function BoardKanbanView({
         onSubmit={handleColumnEditorSubmit}
       />
 
+      <ColumnDeleteConfirmDialog
+        boardId={boardId}
+        open={pendingDeleteColumn !== null}
+        onOpenChange={(next) => {
+          if (!next) setPendingDeleteColumn(null)
+        }}
+        columnId={pendingDeleteColumn?.id ?? ''}
+        columnTitle={pendingDeleteColumn?.title ?? ''}
+        taskCount={pendingDeleteColumn?.taskCount ?? 0}
+        onDeleted={handleColumnDeleted}
+      />
+
       <TaskCardDialog
         mode={taskDialogMode}
         open={taskDialogOpen}
@@ -743,6 +835,21 @@ export function BoardKanbanView({
         }}
         initial={taskDialogMode === 'edit' ? taskDialogInitial ?? undefined : undefined}
         onSubmit={handleTaskDialogSubmit}
+        onDeleteTask={
+          taskDialogMode === 'edit' && taskDialogTaskId
+            ? async () => {
+                setActionError(null)
+                try {
+                  await deleteTask.mutateAsync(taskDialogTaskId)
+                } catch (e) {
+                  setActionError(
+                    e instanceof Error ? e.message : 'Не удалось удалить карточку',
+                  )
+                  throw e
+                }
+              }
+            : undefined
+        }
       />
     </div>
   )
