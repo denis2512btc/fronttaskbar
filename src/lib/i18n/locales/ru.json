@@ -112,7 +112,17 @@
     "noAssignee": "Без ответственного",
     "roleOwner": "Владелец",
     "roleMember": "Участник",
-    "roleUser": "Пользователь"
+    "roleUser": "Пользователь",
+    "taskBreakdownTitle": "Разбить задачу",
+    "taskBreakdownPlaceholder": "Опишите задачу — ИИ разобьёт её на карточки",
+    "taskBreakdownSubmit": "Разбить и добавить",
+    "taskBreakdownSending": "Отправка…",
+    "taskBreakdownSaving": "Сохранение на доску…",
+    "taskBreakdownSuccess": "Добавлено задач: {{count}}",
+    "taskBreakdownNeedColumn": "Сначала добавьте колонку на доску.",
+    "taskBreakdownToggleExpand": "Развернуть панель разбиения",
+    "taskBreakdownToggleCollapse": "Свернуть панель",
+    "taskBreakdownColumnLabel": "Колонка"
   },
   "boardCreate": {
     "title": "Новая доска",
@@ -204,7 +214,13 @@
     "noBoard": "Нет доски",
     "needAuth": "Нужна авторизация",
     "invalidTaskOrder": "Некорректный порядок: задача встречается дважды",
-    "invalidTaskData": "Некорректные данные задачи. Обновите страницу."
+    "invalidTaskData": "Некорректные данные задачи. Обновите страницу.",
+    "taskBreakdownApiNotConfigured": "Укажите VITE_TASK_BREAKDOWN_API_URL в .env для разбиения задач.",
+    "taskBreakdownEmptyTask": "Введите текст задачи",
+    "taskBreakdownHttpError": "Сервер разбиения ответил с ошибкой ({{status}})",
+    "taskBreakdownInvalidResponse": "Некорректный ответ сервера разбиения",
+    "taskBreakdownEmptyItems": "Сервер не вернул подзадачи",
+    "createTasksBatchFailed": "Не удалось создать задачи на доске"
   },
   "validation": {
     "boardTitleRequired": "Введите название доски",

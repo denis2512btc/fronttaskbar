@@ -3,6 +3,7 @@ import i18n from '@/lib/i18n/i18n'
 import type { Database } from '@/types/database'
 import type { ColumnColorPreset } from '@/features/columns/constants/column-color-presets'
 import { COLUMN_COLOR_PRESET_CLASSES } from '@/features/columns/constants/column-color-presets'
+import { apiColorToColumnPreset } from '@/features/tasks/utils/api-color-to-preset'
 
 export type TaskRow = Database['public']['Tables']['tasks']['Row']
 
@@ -103,6 +104,34 @@ export async function createBoardTask(params: {
   if (error) throw new Error(error.message)
   if (!data) throw new Error(i18n.t('errors.createTaskFailed'))
   return mapTaskRow(data as TaskRow)
+}
+
+export async function createBoardTasksBatch(params: {
+  boardId: string
+  columnId: string
+  items: { title: string; description: string; color: string }[]
+  assigneeId: string | null
+}): Promise<KanbanTaskFromApi[]> {
+  ensureConfigured()
+  if (params.items.length === 0) return []
+
+  const start = await getNextTaskPosition(params.columnId)
+  const rows = params.items.map((item, i) => ({
+    board_id: params.boardId,
+    column_id: params.columnId,
+    title: item.title.trim(),
+    description: item.description,
+    color: apiColorToColumnPreset(item.color),
+    assignee_id: params.assigneeId,
+    position: start + i,
+  }))
+
+  const { data, error } = await supabase.from('tasks').insert(rows).select('*')
+
+  if (error) throw new Error(error.message)
+  if (!data?.length) throw new Error(i18n.t('errors.createTasksBatchFailed'))
+
+  return (data as TaskRow[]).map((row) => mapTaskRow(row))
 }
 
 export async function updateBoardTask(params: {

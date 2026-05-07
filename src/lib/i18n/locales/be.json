@@ -112,7 +112,17 @@
     "noAssignee": "Без адказнага",
     "roleOwner": "Уладальнік",
     "roleMember": "Удзельнік",
-    "roleUser": "Карыстальнік"
+    "roleUser": "Карыстальнік",
+    "taskBreakdownTitle": "Разбіць задачу",
+    "taskBreakdownPlaceholder": "Апішыце задачу — ІІ разаб'е яе на карткі",
+    "taskBreakdownSubmit": "Разбіць і дадаць",
+    "taskBreakdownSending": "Адпраўка…",
+    "taskBreakdownSaving": "Захаванне на дошку…",
+    "taskBreakdownSuccess": "Дададзена задач: {{count}}",
+    "taskBreakdownNeedColumn": "Спачатку дадайце калонку на дошку.",
+    "taskBreakdownToggleExpand": "Разгарнуць панель разбіўкі",
+    "taskBreakdownToggleCollapse": "Згарнуць панель",
+    "taskBreakdownColumnLabel": "Калонка"
   },
   "boardCreate": {
     "title": "Новая дошка",
@@ -204,7 +214,13 @@
     "noBoard": "Няма дошкі",
     "needAuth": "Патрэбная аўтарызацыя",
     "invalidTaskOrder": "Некарэктны парадак: задача сустракаецца двойчы",
-    "invalidTaskData": "Некарэктныя даныя задачы. Абнавіце старонку."
+    "invalidTaskData": "Некарэктныя даныя задачы. Абнавіце старонку.",
+    "taskBreakdownApiNotConfigured": "Укажыце VITE_TASK_BREAKDOWN_API_URL у .env для разбіўкі задач.",
+    "taskBreakdownEmptyTask": "Увядзіце тэкст задачы",
+    "taskBreakdownHttpError": "Сервер разбіўкі адказаў з памылкай ({{status}})",
+    "taskBreakdownInvalidResponse": "Некарэктны адказ сервера разбіўкі",
+    "taskBreakdownEmptyItems": "Сервер не вярнуў падзадачы",
+    "createTasksBatchFailed": "Не атрымалася стварыць задачы на дошцы"
   },
   "validation": {
     "boardTitleRequired": "Увядзіце назву дошкі",

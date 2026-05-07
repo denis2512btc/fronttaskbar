@@ -38,6 +38,7 @@ import {
   useUpdateBoardTaskMutation,
 } from '@/features/boards/hooks/use-board-kanban-queries'
 import { boardGradientFromId } from '@/features/boards/utils/board-accent'
+import { BoardTaskBreakdownPanel } from '@/features/ai/components/BoardTaskBreakdownPanel'
 import { ColumnEditorDialog } from '@/features/columns/components/ColumnEditorDialog'
 import { ColumnDeleteConfirmDialog } from '@/features/columns/components/ColumnDeleteConfirmDialog'
 import type { ColumnEditorFormInput } from '@/features/columns/validations/column-editor'
@@ -854,6 +855,17 @@ export function BoardKanbanView({
             : undefined
         }
       />
+
+      {!kanbanError && (
+        <BoardTaskBreakdownPanel
+          boardId={boardId}
+          columns={columnsWithTasks.map((c) => ({
+            id: c.id,
+            title: c.title,
+            position: c.position,
+          }))}
+        />
+      )}
     </div>
   )
 }

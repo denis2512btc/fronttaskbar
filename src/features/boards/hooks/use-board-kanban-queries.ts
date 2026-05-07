@@ -10,6 +10,7 @@ import {
 import {
   applyKanbanTaskMoves,
   createBoardTask,
+  createBoardTasksBatch,
   deleteBoardTask,
   fetchBoardTasks,
   updateBoardTask,
@@ -95,6 +96,28 @@ export function useCreateBoardTaskMutation(boardId: string | undefined) {
         title: input.title,
         description: input.description,
         color: input.color,
+        assigneeId: input.assigneeId,
+      })
+    },
+    onSuccess: async () => {
+      if (boardId) await invalidateBoardKanban(queryClient, boardId)
+    },
+  })
+}
+
+export function useCreateBoardTasksBatchMutation(boardId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: {
+      columnId: string
+      items: { title: string; description: string; color: string }[]
+      assigneeId: string | null
+    }) => {
+      if (!boardId) throw new Error(i18n.t('errors.noBoard'))
+      return createBoardTasksBatch({
+        boardId,
+        columnId: input.columnId,
+        items: input.items,
         assigneeId: input.assigneeId,
       })
     },

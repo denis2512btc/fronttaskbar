@@ -112,7 +112,17 @@
     "noAssignee": "Unassigned",
     "roleOwner": "Owner",
     "roleMember": "Member",
-    "roleUser": "User"
+    "roleUser": "User",
+    "taskBreakdownTitle": "Break down task",
+    "taskBreakdownPlaceholder": "Describe the task — AI will split it into cards",
+    "taskBreakdownSubmit": "Break down and add",
+    "taskBreakdownSending": "Sending…",
+    "taskBreakdownSaving": "Saving to board…",
+    "taskBreakdownSuccess": "Added tasks: {{count}}",
+    "taskBreakdownNeedColumn": "Add a column to the board first.",
+    "taskBreakdownToggleExpand": "Expand breakdown panel",
+    "taskBreakdownToggleCollapse": "Collapse panel",
+    "taskBreakdownColumnLabel": "Column"
   },
   "boardCreate": {
     "title": "New board",
@@ -204,7 +214,13 @@
     "noBoard": "No board",
     "needAuth": "Sign-in required",
     "invalidTaskOrder": "Invalid order: a task appears twice",
-    "invalidTaskData": "Invalid task data. Refresh the page."
+    "invalidTaskData": "Invalid task data. Refresh the page.",
+    "taskBreakdownApiNotConfigured": "Set VITE_TASK_BREAKDOWN_API_URL in .env to break down tasks.",
+    "taskBreakdownEmptyTask": "Enter a task description",
+    "taskBreakdownHttpError": "Breakdown server returned an error ({{status}})",
+    "taskBreakdownInvalidResponse": "Invalid breakdown server response",
+    "taskBreakdownEmptyItems": "The server returned no subtasks",
+    "createTasksBatchFailed": "Could not create tasks on the board"
   },
   "validation": {
     "boardTitleRequired": "Enter a board title",

@@ -23,14 +23,30 @@
 
 - Миграция [`supabase/migrations/20260205120000_board_columns_and_tasks.sql`](../supabase/migrations/20260205120000_board_columns_and_tasks.sql): таблицы `board_columns` и `tasks`, индексы, триггер `updated_at` для задач, RLS для владельца и участников `board_members`; у задач FK на колонку с `ON DELETE CASCADE`.
 - [`src/types/database.ts`](../src/types/database.ts) — типы таблиц.
-- [`src/features/columns/api/columns-api.ts`](../src/features/columns/api/columns-api.ts) — колонки; [`src/features/tasks/api/tasks-api.ts`](../src/features/tasks/api/tasks-api.ts) — задачи (включая последующие доработки DnD и удаления).
+- [`src/features/columns/api/columns-api.ts`](../src/features/columns/api/columns-api.ts) — колонки; [`src/features/tasks/api/tasks-api.ts`](../src/features/tasks/api/tasks-api.ts) — задачи (DnD, удаление, батч-вставка для панели разбиения — раздел 3 ниже).
 - [`src/features/boards/hooks/use-board-kanban-queries.ts`](../src/features/boards/hooks/use-board-kanban-queries.ts) — ключи канбана, запросы и мутации.
 - [`TaskCardDialog`](../src/features/tasks/components/TaskCardDialog.tsx), [`ColumnEditorDialog`](../src/features/columns/components/ColumnEditorDialog.tsx), валидация [`task-create.ts`](../src/features/tasks/validations/task-create.ts).
 - [`BoardPage`](../src/pages/board/BoardPage.tsx) загружает доску; канбан в [`BoardKanbanView`](../src/features/boards/components/BoardKanbanView.tsx).
 
 ---
 
-## 3. Drag-and-drop карточек между колонками
+## 3. Панель разбиения задач (внешний бэкенд → Supabase)
+
+**Запрос:** Окно на доске: отправка текста задачи на бэкенд, ответ с массивом подзадач, массовое создание карточек в выбранной колонке.
+
+**Сделано:**
+
+- Переменная окружения **`VITE_TASK_BREAKDOWN_API_URL`** — полный URL эндпоинта (см. [`.env.example`](../.env.example)). Тело запроса: `POST` JSON `{"task": "<текст>"}`. Ответ: `{ "items": [ { "title", "description", "color" }, ... ] }` (проверка через Zod).
+- [`src/features/ai/api/task-breakdown.ts`](../src/features/ai/api/task-breakdown.ts) — `requestTaskBreakdown`, `getTaskBreakdownApiUrl`.
+- Цвет из API часто приходит как hex (`#3b82f6`); в БД и UI карточки используются только Tailwind-пресеты колонок/карточек. Сопоставление: [`src/features/tasks/utils/api-color-to-preset.ts`](../src/features/tasks/utils/api-color-to-preset.ts) (`apiColorToColumnPreset`).
+- Пакетная вставка: [`createBoardTasksBatch`](../src/features/tasks/api/tasks-api.ts) — один `insert` нескольких строк с корректными `position`; хук [`useCreateBoardTasksBatchMutation`](../src/features/boards/hooks/use-board-kanban-queries.ts).
+- UI: [`BoardTaskBreakdownPanel`](../src/features/ai/components/BoardTaskBreakdownPanel.tsx) (fixed, сворачивание), подключён в [`BoardKanbanView`](../src/features/boards/components/BoardKanbanView.tsx). i18n: ключи `board.taskBreakdown*` и `errors.taskBreakdown*` / `errors.createTasksBatchFailed`.
+
+**Заметки:** На стороне бэкенда нужен **CORS** для origin фронта. Без `VITE_TASK_BREAKDOWN_API_URL` кнопка отправки недоступна (подсказка в панели).
+
+---
+
+## 4. Drag-and-drop карточек между колонками
 
 **Запрос:** Перетаскивание карточек между колонками и сохранение порядка.
 
@@ -38,7 +54,7 @@
 
 ---
 
-## 4. Удаление колонок и карточек
+## 5. Удаление колонок и карточек
 
 **Запрос:** Возможность удалять колонки и карточки канбана.
 
@@ -85,4 +101,24 @@ sequenceDiagram
   Q->>API: insert_update_delete_reorder
   API->>SB: write
   Q->>Q: invalidate kanban keys
+```
+
+---
+
+## Схема: разбиение задачи и батч в колонку
+
+```mermaid
+sequenceDiagram
+  participant User
+  participant Panel as BoardTaskBreakdownPanel
+  participant HTTP as Task_breakdown_API
+  participant Batch as createBoardTasksBatch
+  participant SB as Supabase
+  User->>Panel: текст + колонка + отправить
+  Panel->>HTTP: POST task JSON
+  HTTP-->>Panel: items
+  Panel->>Batch: boardId columnId items
+  Batch->>SB: insert tasks batch
+  SB-->>Panel: OK
+  Panel->>User: карточки на канбане
 ```
