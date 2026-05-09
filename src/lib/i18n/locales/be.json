@@ -149,10 +149,15 @@
   },
   "boardCreate": {
     "title": "Новая дошка",
-    "description": "Увядзіце назву дошкі. Яна будзе захавана ў вашым уліковым запісе Supabase.",
+    "description": "Увядзіце назву і абярыце кампетэнцыю, з якой вы будзеце працаваць на гэтай дошцы. Даныя захоўваюцца ў Supabase.",
     "supabaseHint": "Укажыце VITE_SUPABASE_URL і VITE_SUPABASE_ANON_KEY у .env, каб ствараць дошкі.",
     "nameLabel": "Назва",
     "placeholder": "Напрыклад, Product Roadmap",
+    "competencyLabel": "Ваша кампетэнцыя на дошцы",
+    "competencyHint": "Так вы будзеце адлюстроўвацца на дошцы для іншых (як роля ўдзельніка).",
+    "competencyLoading": "Загрузка вашых кампетэнцый…",
+    "competencyLoadError": "Не атрымалася загрузіць вашы кампетэнцыі",
+    "noCompetencies": "Дадайце кампетэнцыі ў наладах уліковага запісу, затым стварыце дошку.",
     "createError": "Не атрымалася стварыць дошку",
     "create": "Стварыць"
   },
@@ -257,6 +262,7 @@
   "validation": {
     "boardTitleRequired": "Увядзіце назву дошкі",
     "boardTitleMax": "Не больш за 120 сімвалаў",
+    "boardCompetencyRequired": "Абярыце кампетэнцыю",
     "columnTitleRequired": "Увядзіце назву калонкі",
     "columnTitleMax": "Не больш за 80 сімвалаў",
     "taskTitleRequired": "Увядзіце назву задачы",

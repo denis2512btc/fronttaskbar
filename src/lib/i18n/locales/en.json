@@ -149,10 +149,15 @@
   },
   "boardCreate": {
     "title": "New board",
-    "description": "Enter a board name. It will be saved to your Supabase account.",
+    "description": "Enter a name and pick which of your competencies you will use on this board. Data is saved to Supabase.",
     "supabaseHint": "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env to create boards.",
     "nameLabel": "Title",
     "placeholder": "e.g. Product Roadmap",
+    "competencyLabel": "Your competency on this board",
+    "competencyHint": "This is how you will appear to others on this board (same as member roles).",
+    "competencyLoading": "Loading your competencies…",
+    "competencyLoadError": "Could not load your competencies",
+    "noCompetencies": "Add competencies in account settings before creating a board.",
     "createError": "Could not create board",
     "create": "Create"
   },
@@ -257,6 +262,7 @@
   "validation": {
     "boardTitleRequired": "Enter a board title",
     "boardTitleMax": "Max 120 characters",
+    "boardCompetencyRequired": "Choose a competency",
     "columnTitleRequired": "Enter a column title",
     "columnTitleMax": "Max 80 characters",
     "taskTitleRequired": "Enter a task title",

@@ -46,6 +46,7 @@ export interface BoardSettingsDialogProps {
   ownerId: string
   currentUserId: string
   canManageMembers: boolean
+  showDeleteBoard?: boolean
 }
 
 export function BoardSettingsDialog({
@@ -56,6 +57,7 @@ export function BoardSettingsDialog({
   ownerId,
   currentUserId,
   canManageMembers,
+  showDeleteBoard = true,
 }: BoardSettingsDialogProps) {
   const { t } = useTranslation()
   const baseId = useId()
@@ -114,6 +116,16 @@ export function BoardSettingsDialog({
     for (const row of membersQuery.data ?? []) set.add(row.user_id)
     return set
   }, [membersQuery.data])
+
+  const membersOtherThanOwner = useMemo(
+    () => (membersQuery.data ?? []).filter((row) => row.user_id !== ownerId),
+    [membersQuery.data, ownerId],
+  )
+
+  const ownerBoardMemberRow = useMemo(
+    () => (membersQuery.data ?? []).find((row) => row.user_id === ownerId),
+    [membersQuery.data, ownerId],
+  )
 
   const searchCandidates = useMemo(() => {
     const rows = searchQuery.data ?? []
@@ -188,6 +200,15 @@ export function BoardSettingsDialog({
                   {ownerQuery.data.email ? (
                     <p className="truncate text-xs text-muted-foreground">{ownerQuery.data.email}</p>
                   ) : null}
+                  {ownerBoardMemberRow?.competency_roles?.slug ? (
+                    <p className="truncate text-xs font-medium text-indigo-700 dark:text-indigo-300">
+                      {t('boardSettings.memberBoardRole', {
+                        role: t(
+                          `competencies.roles.${ownerBoardMemberRow.competency_roles.slug}`,
+                        ),
+                      })}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             ) : (
@@ -210,7 +231,7 @@ export function BoardSettingsDialog({
                   ? membersQuery.error.message
                   : t('boardSettings.membersLoadError')}
               </p>
-            ) : (membersQuery.data ?? []).length === 0 ? (
+            ) : membersOtherThanOwner.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 {canManageMembers
                   ? `${t('boardSettings.noMembers')}${t('boardSettings.noMembersHint')}`
@@ -221,7 +242,7 @@ export function BoardSettingsDialog({
                 className="flex max-h-40 flex-col gap-1 overflow-y-auto rounded-xl border border-border/60 bg-muted/30 p-1"
                 aria-label={t('boardSettings.membersAria')}
               >
-                {(membersQuery.data ?? []).map((row) => {
+                {membersOtherThanOwner.map((row) => {
                   const p = row.profiles
                   const label = p ? displayLabel(p, t) : row.user_id
                   const email = p?.email ?? null
@@ -446,7 +467,7 @@ export function BoardSettingsDialog({
             </section>
           ) : null}
 
-          {canManageMembers ? (
+          {canManageMembers && showDeleteBoard ? (
             <section className="flex flex-col gap-2 rounded-xl border border-destructive/25 bg-destructive/5 p-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-destructive">
                 {t('boardSettings.dangerZone')}

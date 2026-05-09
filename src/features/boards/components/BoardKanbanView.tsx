@@ -19,7 +19,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Loader2, Plus, MoreHorizontal, ChevronLeft, Pencil, Trash2 } from 'lucide-react'
+import { Loader2, Plus, MoreHorizontal, ChevronLeft, Pencil, Trash2, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
@@ -37,6 +37,8 @@ import {
   useUpdateBoardColumnMutation,
   useUpdateBoardTaskMutation,
 } from '@/features/boards/hooks/use-board-kanban-queries'
+import { useAuthSession } from '@/features/auth/hooks/use-auth-session'
+import { BoardSettingsDialog } from '@/features/boards/components/BoardSettingsDialog'
 import { boardGradientFromId } from '@/features/boards/utils/board-accent'
 import { BoardTaskBreakdownPanel } from '@/features/ai/components/BoardTaskBreakdownPanel'
 import { ColumnEditorDialog } from '@/features/columns/components/ColumnEditorDialog'
@@ -226,10 +228,16 @@ export function BoardKanbanView({
   boardOwnerId: string
 }) {
   const { t } = useTranslation()
+  const { user } = useAuthSession()
   const columnsQuery = useBoardColumnsQuery(boardId)
   const tasksQuery = useBoardTasksQuery(boardId)
   const { data: members } = useBoardMembersQuery(boardId, true)
   const { data: ownerProfile } = useOwnerProfileQuery(boardOwnerId, true)
+
+  const ownerBoardRoleSlug = useMemo(() => {
+    const row = members?.find((m) => m.user_id === boardOwnerId)
+    return row?.competency_roles?.slug
+  }, [members, boardOwnerId])
 
   const createColumn = useCreateBoardColumnMutation(boardId)
   const updateColumn = useUpdateBoardColumnMutation(boardId)
@@ -238,6 +246,8 @@ export function BoardKanbanView({
   const deleteTask = useDeleteBoardTaskMutation(boardId)
   const reorderTasks = useReorderKanbanTasksMutation(boardId)
 
+  const [boardSettingsOpen, setBoardSettingsOpen] = useState(false)
+  const [taskBreakdownOpen, setTaskBreakdownOpen] = useState(false)
   const [columnEditorOpen, setColumnEditorOpen] = useState(false)
   const [columnEditorMode, setColumnEditorMode] = useState<'create' | 'edit'>('create')
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null)
@@ -268,7 +278,7 @@ export function BoardKanbanView({
     const opts: TaskAssigneeOption[] = []
     const ownerLabel =
       ownerProfile?.display_name?.trim() || ownerProfile?.email?.trim() || t('board.roleOwner')
-    opts.push({ value: boardOwnerId, label: ownerLabel })
+    opts.push({ value: boardOwnerId, label: withBoardRole(ownerLabel, ownerBoardRoleSlug) })
     for (const m of members ?? []) {
       if (m.user_id === boardOwnerId) continue
       const p = m.profiles
@@ -277,7 +287,7 @@ export function BoardKanbanView({
       opts.push({ value: m.user_id, label: withBoardRole(label, slug) })
     }
     return opts
-  }, [boardOwnerId, ownerProfile, members, t])
+  }, [boardOwnerId, ownerProfile, members, ownerBoardRoleSlug, t])
 
   const assigneePreviewById = useMemo(() => {
     const withBoardRole = (name: string, slug: string | undefined) =>
@@ -292,7 +302,11 @@ export function BoardKanbanView({
         gradientSuffix: boardGradientFromId(userId),
       })
     }
-    put(boardOwnerId, ownerProfile?.display_name || ownerProfile?.email || t('board.roleOwner'))
+    put(
+      boardOwnerId,
+      ownerProfile?.display_name || ownerProfile?.email || t('board.roleOwner'),
+      ownerBoardRoleSlug,
+    )
     for (const m of members ?? []) {
       const p = m.profiles
       put(
@@ -302,7 +316,7 @@ export function BoardKanbanView({
       )
     }
     return map
-  }, [boardOwnerId, ownerProfile, members, t])
+  }, [boardOwnerId, ownerProfile, members, ownerBoardRoleSlug, t])
 
   const columnsWithTasks: KanbanColumnWithTasks[] = useMemo(() => {
     const cols = columnsQuery.data ?? []
@@ -340,27 +354,36 @@ export function BoardKanbanView({
     itemsRef.current = displayColumnItems
   }, [displayColumnItems])
 
-  const headerMembers = useMemo(() => {
-    const withBoardRole = (name: string, slug: string | undefined) =>
-      slug ? `${name} · ${t(`competencies.roles.${slug}`)}` : name
-    const list: { userId: string; label: string }[] = [
-      {
-        userId: boardOwnerId,
-        label:
-          ownerProfile?.display_name?.trim() || ownerProfile?.email?.trim() || t('board.roleOwner'),
-      },
-    ]
+  const boardHeaderMembers = useMemo(() => {
+    const list: {
+      userId: string
+      name: string
+      email: string | null
+      roleTitle: string | null
+    }[] = []
+    const ownerName =
+      ownerProfile?.display_name?.trim() || ownerProfile?.email?.trim() || t('board.roleOwner')
+    const ownerEmail = ownerProfile?.email?.trim() || null
+    list.push({
+      userId: boardOwnerId,
+      name: ownerName,
+      email: ownerEmail,
+      roleTitle: ownerBoardRoleSlug ? t(`competencies.roles.${ownerBoardRoleSlug}`) : null,
+    })
     for (const m of members ?? []) {
       if (m.user_id === boardOwnerId) continue
       const p = m.profiles
       const base = p?.display_name?.trim() || p?.email?.trim() || m.user_id
+      const slug = m.competency_roles?.slug
       list.push({
         userId: m.user_id,
-        label: withBoardRole(base, m.competency_roles?.slug),
+        name: base,
+        email: p?.email?.trim() || null,
+        roleTitle: slug ? t(`competencies.roles.${slug}`) : null,
       })
     }
-    return list.slice(0, 4)
-  }, [boardOwnerId, ownerProfile, members, t])
+    return list
+  }, [boardOwnerId, ownerProfile, members, ownerBoardRoleSlug, t])
 
   const editingColumn = editingColumnId
     ? columnsWithTasks.find((c) => c.id === editingColumnId)
@@ -600,8 +623,20 @@ export function BoardKanbanView({
   const activeDragTask =
     activeDragTaskId !== null ? tasksById.get(activeDragTaskId) ?? null : null
 
+  const canManageMembers = user?.id === boardOwnerId
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
+      <BoardSettingsDialog
+        open={boardSettingsOpen}
+        onOpenChange={setBoardSettingsOpen}
+        boardId={boardId}
+        boardTitle={boardTitle}
+        ownerId={boardOwnerId}
+        currentUserId={user?.id ?? ''}
+        canManageMembers={canManageMembers}
+        showDeleteBoard={false}
+      />
       <div className="flex items-center justify-between border-b border-border/60 px-6 py-3">
         <div className="flex items-center gap-3">
           <Link
@@ -615,33 +650,66 @@ export function BoardKanbanView({
           <h1 className="text-sm font-semibold">{boardTitle}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex -space-x-1.5">
-            {headerMembers.map((m) => (
-              <span
-                key={m.userId}
-                title={m.label}
-                className={cn(
-                  'flex size-7 items-center justify-center rounded-full border-2 border-background bg-gradient-to-br text-[10px] font-bold text-white',
-                  boardGradientFromId(m.userId),
-                )}
-              >
-                {initialsFromLabel(m.label)}
-              </span>
-            ))}
-          </div>
           <button
             type="button"
+            onClick={() => setTaskBreakdownOpen(true)}
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted"
+            aria-label={t('board.taskBreakdownTitle')}
+          >
+            <Sparkles className="size-4" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => setBoardSettingsOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
           >
             <Plus className="size-3.5" />
             {t('board.memberInvite')}
           </button>
-          <button
-            type="button"
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted"
-          >
-            <MoreHorizontal className="size-4" />
-          </button>
+          <div className="group relative flex flex-col items-end">
+            <button
+              type="button"
+              aria-label={t('boardSettings.membersAria')}
+              aria-haspopup="true"
+              className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted"
+            >
+              <MoreHorizontal className="size-4" />
+            </button>
+            <div className="invisible absolute top-full right-0 z-50 pt-1 opacity-0 transition-opacity duration-150 pointer-events-none group-hover:visible group-hover:opacity-100 group-hover:pointer-events-auto">
+              <div className="min-w-[14rem] rounded-xl border border-border/60 bg-card p-3 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t('boardSettings.members')}
+                </p>
+                <ul className="mt-2 flex max-h-[min(50vh,18rem)] flex-col gap-3 overflow-y-auto">
+                  {boardHeaderMembers.map((row) => {
+                    const role = row.roleTitle?.trim()
+                    const name = row.name.trim()
+                    const em = row.email?.trim()
+                    const showEmail = Boolean(em && em !== name)
+                    return (
+                      <li key={row.userId} className="text-sm break-words">
+                        {role ? (
+                          <>
+                            <span className="font-semibold text-indigo-700 dark:text-indigo-300">
+                              {role}
+                            </span>
+                            <span className="text-muted-foreground"> · </span>
+                          </>
+                        ) : null}
+                        <span className="text-foreground">{name}</span>
+                        {showEmail ? (
+                          <>
+                            <span className="text-muted-foreground"> · </span>
+                            <span className="text-muted-foreground">{em}</span>
+                          </>
+                        ) : null}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -872,6 +940,8 @@ export function BoardKanbanView({
       {!kanbanError && (
         <BoardTaskBreakdownPanel
           boardId={boardId}
+          open={taskBreakdownOpen}
+          onOpenChange={setTaskBreakdownOpen}
           columns={columnsWithTasks.map((c) => ({
             id: c.id,
             title: c.title,

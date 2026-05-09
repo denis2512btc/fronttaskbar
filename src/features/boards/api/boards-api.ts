@@ -38,6 +38,19 @@ function mergeBoardsById(owned: BoardRow[], shared: BoardRow[]): BoardRow[] {
   )
 }
 
+async function ensureCompetencyRoleAllowedForUser(
+  userId: string,
+  competencyRoleId: string,
+): Promise<void> {
+  const roles = await fetchProfileCompetencyRoles(userId)
+  if (roles.length === 0) {
+    throw new Error(i18n.t('errors.boardMemberNoCompetencies'))
+  }
+  if (!roles.some((r) => r.role_id === competencyRoleId)) {
+    throw new Error(i18n.t('errors.boardMemberRoleInvalid'))
+  }
+}
+
 export async function upsertCurrentUserProfile(user: User): Promise<void> {
   ensureConfigured()
   const email = user.email ?? ''
@@ -120,8 +133,11 @@ export async function fetchAccessibleBoardsForUser(userId: string): Promise<Boar
 export async function createBoard(params: {
   title: string
   ownerId: string
+  competencyRoleId: string
 }): Promise<{ id: string }> {
   ensureConfigured()
+  await ensureCompetencyRoleAllowedForUser(params.ownerId, params.competencyRoleId)
+
   const { data, error } = await supabase
     .from('boards')
     .insert({ title: params.title.trim(), owner_id: params.ownerId })
@@ -130,6 +146,14 @@ export async function createBoard(params: {
 
   if (error) throw new Error(error.message)
   if (!data) throw new Error(i18n.t('errors.createBoardFailed'))
+
+  const { error: memberErr } = await supabase.from('board_members').insert({
+    board_id: data.id,
+    user_id: params.ownerId,
+    competency_role_id: params.competencyRoleId,
+  })
+
+  if (memberErr) throw new Error(memberErr.message)
   return { id: data.id }
 }
 
@@ -161,13 +185,7 @@ export async function addBoardMember(
   competencyRoleId: string,
 ): Promise<void> {
   ensureConfigured()
-  const roles = await fetchProfileCompetencyRoles(userId)
-  if (roles.length === 0) {
-    throw new Error(i18n.t('errors.boardMemberNoCompetencies'))
-  }
-  if (!roles.some((r) => r.role_id === competencyRoleId)) {
-    throw new Error(i18n.t('errors.boardMemberRoleInvalid'))
-  }
+  await ensureCompetencyRoleAllowedForUser(userId, competencyRoleId)
   const { error } = await supabase.from('board_members').insert({
     board_id: boardId,
     user_id: userId,

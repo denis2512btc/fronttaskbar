@@ -69,9 +69,13 @@ export function useCreateBoardMutation(ownerId: string | undefined) {
   const navigate = useNavigate()
 
   return useMutation({
-    mutationFn: (title: string) => {
+    mutationFn: (input: { title: string; competencyRoleId: string }) => {
       if (!ownerId) throw new Error(i18n.t('errors.needAuth'))
-      return createBoard({ title, ownerId })
+      return createBoard({
+        title: input.title,
+        ownerId,
+        competencyRoleId: input.competencyRoleId,
+      })
     },
     onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey: ['boards'] })

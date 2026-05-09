@@ -7,6 +7,9 @@ export function createBoardFormSchema(t: TFunction) {
       .string()
       .min(1, t('validation.boardTitleRequired'))
       .max(120, t('validation.boardTitleMax')),
+    competencyRoleId: z
+      .string()
+      .uuid(t('validation.boardCompetencyRequired')),
   })
 }
 

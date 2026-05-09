@@ -11,6 +11,8 @@
 3. [`20260509120000_competencies.sql`](../supabase/migrations/20260509120000_competencies.sql) — `competency_roles`, `profile_competencies`, ограничения (одна основная роль, до 5 на профиль), RLS, сиды справочника.
 4. [`20260510120000_board_member_competency_role.sql`](../supabase/migrations/20260510120000_board_member_competency_role.sql) — `board_members.competency_role_id` → `competency_roles`, бэктфилл, `NOT NULL`.
 5. [`20260510121500_profile_competencies_public_read.sql`](../supabase/migrations/20260510121500_profile_competencies_public_read.sql) — политика `SELECT` для всех `authenticated` на `profile_competencies`, чтобы владелец доски мог видеть компетенции приглашаемого пользователя.
+6. [`20260511120000_board_owner_member_backfill.sql`](../supabase/migrations/20260511120000_board_owner_member_backfill.sql) — бэктфилл владельца в `board_members` (если ещё нет строки).
+7. [`20260512120000_board_members_insert_owner_check.sql`](../supabase/migrations/20260512120000_board_members_insert_owner_check.sql) — исправление RLS для `INSERT` в `board_members` (функция `is_board_owner`).
 
 ---
 

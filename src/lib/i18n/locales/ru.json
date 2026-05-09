@@ -149,10 +149,15 @@
   },
   "boardCreate": {
     "title": "Новая доска",
-    "description": "Введите название доски. Она будет сохранена в вашем аккаунте Supabase.",
+    "description": "Введите название и выберите компетенцию, с которой вы будете работать на этой доске. Данные сохраняются в Supabase.",
     "supabaseHint": "Укажите VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env, чтобы создавать доски.",
     "nameLabel": "Название",
     "placeholder": "Например, Product Roadmap",
+    "competencyLabel": "Ваша компетенция на доске",
+    "competencyHint": "Так вы будете отображаться на доске для других (как роль участника).",
+    "competencyLoading": "Загрузка ваших компетенций…",
+    "competencyLoadError": "Не удалось загрузить ваши компетенции",
+    "noCompetencies": "Добавьте компетенции в настройках аккаунта, затем создайте доску.",
     "createError": "Не удалось создать доску",
     "create": "Создать"
   },
@@ -257,6 +262,7 @@
   "validation": {
     "boardTitleRequired": "Введите название доски",
     "boardTitleMax": "Не больше 120 символов",
+    "boardCompetencyRequired": "Выберите компетенцию",
     "columnTitleRequired": "Введите название колонки",
     "columnTitleMax": "Не больше 80 символов",
     "taskTitleRequired": "Введите название задачи",

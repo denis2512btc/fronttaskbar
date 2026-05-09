@@ -45,7 +45,9 @@
 2. Видит список **только тех компетенций**, которые у этого пользователя заданы в `profile_competencies`.
 3. Выбирает **одну** роль — она сохраняется как контекст участия на **этой** доске.
 
-В списке участников и на канбане (исполнители, аватары в шапке) к имени участника добавляется выбранная на доске роль (локализация через те же ключи `competencies.roles.*`).
+При **создании доски** владелец в [`CreateBoardDialog`](../src/features/boards/components/CreateBoardDialog.tsx) также выбирает одну из **своих** компетенций; для пары (доска, владелец) создаётся строка в `board_members` с выбранным `competency_role_id`. API: [`createBoard`](../src/features/boards/api/boards-api.ts) — проверка, что роль входит в компетенции владельца (как у `addBoardMember`).
+
+В списке участников и на канбане (исполнители, аватары в шапке) к имени участника добавляется выбранная на доске роль (локализация через те же ключи `competencies.roles.*`). У владельца подпись берётся из его строки в `board_members`, если она есть.
 
 ### Данные в Supabase
 
@@ -59,13 +61,15 @@
 
 ### Поведение в приложении
 
-- API: [`fetchProfileCompetencyRoles`](../src/features/competencies/api/competencies-api.ts), [`addBoardMember(boardId, userId, competencyRoleId)`](../src/features/boards/api/boards-api.ts) с проверкой, что `competencyRoleId` входит в список компетенций пользователя.
-- UI: [`BoardSettingsDialog`](../src/features/boards/components/BoardSettingsDialog.tsx) — шаг выбора роли после клика по кандидату из поиска.
+- API: [`fetchProfileCompetencyRoles`](../src/features/competencies/api/competencies-api.ts), [`createBoard`](../src/features/boards/api/boards-api.ts) (роль владельца при создании), [`addBoardMember(boardId, userId, competencyRoleId)`](../src/features/boards/api/boards-api.ts) с проверкой, что `competencyRoleId` входит в список компетенций пользователя.
+- UI: [`CreateBoardDialog`](../src/features/boards/components/CreateBoardDialog.tsx) — выбор компетенции владельца при создании доски; [`BoardSettingsDialog`](../src/features/boards/components/BoardSettingsDialog.tsx) — шаг выбора роли после клика по кандидату из поиска; роль владельца на доске отображается в секции владельца; в списке приглашённых участников владелец не дублируется.
 - Канбан: [`BoardKanbanView`](../src/features/boards/components/BoardKanbanView.tsx) — суффикс «· роль» для участников из `board_members`.
 
 ### Миграции
 
 - [`20260510120000_board_member_competency_role.sql`](../supabase/migrations/20260510120000_board_member_competency_role.sql) — колонка + бэктфилл + NOT NULL.
+- [`20260511120000_board_owner_member_backfill.sql`](../supabase/migrations/20260511120000_board_owner_member_backfill.sql) — для существующих досок: вставка владельца в `board_members` с `competency_role_id` (основная компетенция профиля / первая / fallback из справочника), если строки ещё нет.
+- [`20260512120000_board_members_insert_owner_check.sql`](../supabase/migrations/20260512120000_board_members_insert_owner_check.sql) — политика `INSERT` на `board_members` через `is_board_owner(board_id)` (`SECURITY DEFINER`), чтобы вставка участника владельцем не блокировалась RLS при чтении `boards`.
 
 ---
 
@@ -141,5 +145,5 @@
 |--------|----------------|
 | Компетенции профиля | [`src/features/competencies/`](../src/features/competencies/), [`src/pages/onboarding/CompetenciesOnboardingPage.tsx`](../src/pages/onboarding/CompetenciesOnboardingPage.tsx) |
 | Гейт onboarding | [`CompetenciesCompleteGate.tsx`](../src/features/competencies/components/CompetenciesCompleteGate.tsx) |
-| Доска: участники и приглашение | [`boards-api.ts`](../src/features/boards/api/boards-api.ts), [`BoardSettingsDialog.tsx`](../src/features/boards/components/BoardSettingsDialog.tsx) |
+| Доска: участники, создание доски, приглашение | [`boards-api.ts`](../src/features/boards/api/boards-api.ts), [`CreateBoardDialog.tsx`](../src/features/boards/components/CreateBoardDialog.tsx), [`BoardSettingsDialog.tsx`](../src/features/boards/components/BoardSettingsDialog.tsx) |
 | Обзор всей доски и канбана | [`docs/board_develop.md`](board_develop.md) |
