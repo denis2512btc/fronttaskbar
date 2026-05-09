@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { boardGradientFromId } from '@/features/boards/utils/board-accent'
 import { DeleteBoardConfirmDialog } from '@/features/boards/components/DeleteBoardConfirmDialog'
+import { useProfileCompetencyRolesQuery } from '@/features/competencies/hooks/use-competencies-queries'
+import type { ProfileRow } from '@/features/boards/api/boards-api'
 import {
   useAddBoardMemberMutation,
   useBoardMembersQuery,
@@ -61,12 +63,16 @@ export function BoardSettingsDialog({
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [inviteProfile, setInviteProfile] = useState<ProfileRow | null>(null)
+  const [selectedRoleId, setSelectedRoleId] = useState('')
 
   const handleDialogOpenChange = (next: boolean) => {
     if (!next) {
       setSearchInput('')
       setDebouncedSearch('')
       setDeleteConfirmOpen(false)
+      setInviteProfile(null)
+      setSelectedRoleId('')
     }
     onOpenChange(next)
   }
@@ -85,6 +91,24 @@ export function BoardSettingsDialog({
   const addMutation = useAddBoardMemberMutation(boardId || undefined)
   const removeMutation = useRemoveBoardMemberMutation(boardId || undefined)
 
+  const inviteRolesQuery = useProfileCompetencyRolesQuery(
+    inviteProfile?.id,
+    open && Boolean(inviteProfile?.id),
+  )
+
+  useEffect(() => {
+    const roles = inviteRolesQuery.data
+    if (!roles?.length) {
+      setSelectedRoleId('')
+      return
+    }
+    setSelectedRoleId((cur) => {
+      if (cur && roles.some((r) => r.role_id === cur)) return cur
+      const primary = roles.find((r) => r.is_primary)
+      return primary?.role_id ?? roles[0]!.role_id
+    })
+  }, [inviteRolesQuery.data])
+
   const memberIds = useMemo(() => {
     const set = new Set<string>()
     for (const row of membersQuery.data ?? []) set.add(row.user_id)
@@ -96,9 +120,15 @@ export function BoardSettingsDialog({
     return rows.filter((p) => p.id !== ownerId && !memberIds.has(p.id))
   }, [searchQuery.data, ownerId, memberIds])
 
-  const handleAddMember = async (userId: string) => {
+  const handleConfirmInvite = async () => {
+    if (!inviteProfile || !selectedRoleId) return
     try {
-      await addMutation.mutateAsync(userId)
+      await addMutation.mutateAsync({
+        userId: inviteProfile.id,
+        competencyRoleId: selectedRoleId,
+      })
+      setInviteProfile(null)
+      setSelectedRoleId('')
     } catch {
       /* surfaced via addMutation.isError */
     }
@@ -196,6 +226,7 @@ export function BoardSettingsDialog({
                   const label = p ? displayLabel(p, t) : row.user_id
                   const email = p?.email ?? null
                   const gid = row.user_id
+                  const boardRoleSlug = row.competency_roles?.slug
                   return (
                     <li
                       key={row.user_id}
@@ -219,6 +250,13 @@ export function BoardSettingsDialog({
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{label}</p>
                         {email ? <p className="truncate text-xs text-muted-foreground">{email}</p> : null}
+                        {boardRoleSlug ? (
+                          <p className="truncate text-xs font-medium text-indigo-700 dark:text-indigo-300">
+                            {t('boardSettings.memberBoardRole', {
+                              role: t(`competencies.roles.${boardRoleSlug}`),
+                            })}
+                          </p>
+                        ) : null}
                       </div>
                       {canManageMembers ? (
                         <Button
@@ -255,23 +293,6 @@ export function BoardSettingsDialog({
               <label htmlFor={searchId} className="sr-only">
                 {t('boardSettings.searchUsers')}
               </label>
-              <div className="relative">
-                <Search
-                  className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
-                  aria-hidden
-                />
-                <Input
-                  id={searchId}
-                  type="search"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder={t('boardSettings.searchPlaceholder')}
-                  autoComplete="off"
-                  className="pl-8"
-                  disabled={!dialogActive}
-                />
-              </div>
-
               {(addMutation.isError || searchQuery.isError) && (
                 <p className="text-xs text-destructive">
                   {addMutation.error instanceof Error
@@ -281,9 +302,99 @@ export function BoardSettingsDialog({
                       : t('boardSettings.queryError')}
                 </p>
               )}
+              {inviteProfile ? (
+                <div className="flex flex-col gap-4 rounded-xl border border-border/60 bg-muted/30 p-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t('boardSettings.invitePickRoleTitle')}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-foreground">
+                      {displayLabel(inviteProfile, t)}
+                    </p>
+                    {inviteProfile.email ? (
+                      <p className="text-xs text-muted-foreground">{inviteProfile.email}</p>
+                    ) : null}
+                  </div>
+                  {inviteRolesQuery.isPending ? (
+                    <div className="flex items-center gap-2 py-2">
+                      <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
+                      <span className="text-sm text-muted-foreground">{t('common.loading')}</span>
+                    </div>
+                  ) : (inviteRolesQuery.data ?? []).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{t('boardSettings.inviteNoCompetencies')}</p>
+                  ) : (
+                    <>
+                      <p className="text-xs text-muted-foreground">{t('boardSettings.invitePickRoleHint')}</p>
+                      <div className="flex flex-col gap-2">
+                        {(inviteRolesQuery.data ?? []).map((r) => (
+                          <label
+                            key={r.role_id}
+                            className="flex cursor-pointer items-center gap-3 rounded-lg border border-border/60 bg-card px-3 py-2"
+                          >
+                            <input
+                              type="radio"
+                              name={`${baseId}-invite-role`}
+                              checked={selectedRoleId === r.role_id}
+                              onChange={() => setSelectedRoleId(r.role_id)}
+                              className="size-4 border-input text-indigo-600"
+                            />
+                            <span className="text-sm font-medium">
+                              {t(`competencies.roles.${r.slug}`)}
+                              {r.is_primary ? (
+                                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                                  ({t('boardSettings.invitePrimaryBadge')})
+                                </span>
+                              ) : null}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-lg"
+                          onClick={() => {
+                            setInviteProfile(null)
+                            setSelectedRoleId('')
+                          }}
+                          disabled={addMutation.isPending}
+                        >
+                          {t('boardSettings.inviteBack')}
+                        </Button>
+                        <Button
+                          type="button"
+                          className="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 text-white"
+                          disabled={!selectedRoleId || addMutation.isPending}
+                          onClick={() => void handleConfirmInvite()}
+                        >
+                          {addMutation.isPending ? t('common.saving') : t('boardSettings.inviteConfirm')}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="relative">
+                    <Search
+                      className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+                      aria-hidden
+                    />
+                    <Input
+                      id={searchId}
+                      type="search"
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      placeholder={t('boardSettings.searchPlaceholder')}
+                      autoComplete="off"
+                      className="pl-8"
+                      disabled={!dialogActive}
+                    />
+                  </div>
 
               <div
-                className="flex flex-col gap-1 overflow-y-auto rounded-xl border border-border/60 bg-muted/30 p-1 max-h-[min(40vh,14rem)]"
+                className="flex max-h-[min(40vh,14rem)] flex-col gap-1 overflow-y-auto rounded-xl border border-border/60 bg-muted/30 p-1"
                 role="list"
               >
                 {debouncedSearch.length > 0 && debouncedSearch.length < 2 ? (
@@ -306,7 +417,7 @@ export function BoardSettingsDialog({
                       type="button"
                       role="listitem"
                       disabled={addMutation.isPending}
-                      onClick={() => void handleAddMember(profile.id)}
+                      onClick={() => setInviteProfile(profile)}
                       className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
                     >
                       <span
@@ -330,6 +441,8 @@ export function BoardSettingsDialog({
                   ))
                 )}
               </div>
+                </>
+              )}
             </section>
           ) : null}
 

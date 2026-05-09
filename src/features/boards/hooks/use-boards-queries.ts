@@ -84,9 +84,9 @@ export function useAddBoardMemberMutation(boardId: string | undefined) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (memberUserId: string) => {
+    mutationFn: (input: { userId: string; competencyRoleId: string }) => {
       if (!boardId) throw new Error(i18n.t('errors.noBoard'))
-      return addBoardMember(boardId, memberUserId)
+      return addBoardMember(boardId, input.userId, input.competencyRoleId)
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['boards'] })

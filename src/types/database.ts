@@ -54,21 +54,78 @@ export interface Database {
         }
         Relationships: []
       }
+      competency_roles: {
+        Row: {
+          id: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          id?: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          id?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      profile_competencies: {
+        Row: {
+          id: string
+          profile_id: string
+          role_id: string
+          is_primary: boolean
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          role_id: string
+          is_primary?: boolean
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          role_id?: string
+          is_primary?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'profile_competencies_profile_id_fkey'
+            columns: ['profile_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'profile_competencies_role_id_fkey'
+            columns: ['role_id']
+            isOneToOne: false
+            referencedRelation: 'competency_roles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       board_members: {
         Row: {
           board_id: string
           user_id: string
           created_at: string
+          competency_role_id: string
         }
         Insert: {
           board_id: string
           user_id: string
           created_at?: string
+          competency_role_id: string
         }
         Update: {
           board_id?: string
           user_id?: string
           created_at?: string
+          competency_role_id?: string
         }
         Relationships: [
           {
@@ -83,6 +140,13 @@ export interface Database {
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'board_members_competency_role_id_fkey'
+            columns: ['competency_role_id']
+            isOneToOne: false
+            referencedRelation: 'competency_roles'
             referencedColumns: ['id']
           },
         ]

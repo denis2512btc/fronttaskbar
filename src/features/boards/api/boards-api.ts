@@ -1,5 +1,6 @@
 import type { User } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client'
+import { fetchProfileCompetencyRoles } from '@/features/competencies/api/competencies-api'
 import i18n from '@/lib/i18n/i18n'
 import type { Database } from '@/types/database'
 
@@ -12,7 +13,9 @@ export type ProfileRow = Pick<
 export interface BoardMemberWithProfile {
   user_id: string
   created_at: string
+  competency_role_id: string
   profiles: ProfileRow | null
+  competency_roles: { slug: string } | null
 }
 
 function ensureConfigured(): void {
@@ -142,7 +145,9 @@ export async function fetchBoardMembers(boardId: string): Promise<BoardMemberWit
   ensureConfigured()
   const { data, error } = await supabase
     .from('board_members')
-    .select('user_id, created_at, profiles(id, display_name, email)')
+    .select(
+      'user_id, created_at, competency_role_id, profiles(id, display_name, email), competency_roles(slug)',
+    )
     .eq('board_id', boardId)
     .order('created_at', { ascending: true })
 
@@ -150,9 +155,24 @@ export async function fetchBoardMembers(boardId: string): Promise<BoardMemberWit
   return (data ?? []) as BoardMemberWithProfile[]
 }
 
-export async function addBoardMember(boardId: string, userId: string): Promise<void> {
+export async function addBoardMember(
+  boardId: string,
+  userId: string,
+  competencyRoleId: string,
+): Promise<void> {
   ensureConfigured()
-  const { error } = await supabase.from('board_members').insert({ board_id: boardId, user_id: userId })
+  const roles = await fetchProfileCompetencyRoles(userId)
+  if (roles.length === 0) {
+    throw new Error(i18n.t('errors.boardMemberNoCompetencies'))
+  }
+  if (!roles.some((r) => r.role_id === competencyRoleId)) {
+    throw new Error(i18n.t('errors.boardMemberRoleInvalid'))
+  }
+  const { error } = await supabase.from('board_members').insert({
+    board_id: boardId,
+    user_id: userId,
+    competency_role_id: competencyRoleId,
+  })
 
   if (error) throw new Error(error.message)
 }

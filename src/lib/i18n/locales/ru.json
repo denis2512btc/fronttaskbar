@@ -25,7 +25,9 @@
   },
   "settingsPage": {
     "title": "Настройки",
-    "description": "Здесь появятся настройки аккаунта и рабочего пространства."
+    "description": "Здесь появятся настройки аккаунта и рабочего пространства.",
+    "competenciesSection": "Компетенции и роли",
+    "competenciesSectionHint": "Выберите до пяти ролей из справочника. Одна должна быть основной."
   },
   "landing": {
     "heroTitle": "AI Task Board",
@@ -95,6 +97,27 @@
     "haveAccount": "Уже есть аккаунт?",
     "googleSignInFailed": "Не удалось войти через Google"
   },
+  "competencies": {
+    "onboardingTitle": "Ваши компетенции",
+    "onboardingSubtitle": "Выберите до 5 ролей из справочника. Основная роль обязательна.",
+    "gateLoading": "Проверка профиля…",
+    "gateErrorHint": "Проверьте миграции в папке supabase/migrations и выполните их в SQL Editor или через supabase db push.",
+    "catalogEmpty": "Справочник ролей недоступен. Проверьте подключение к Supabase и миграции.",
+    "pickRoles": "Роли",
+    "pickRolesHint": "Отметьте до пяти ролей, которые вам подходят.",
+    "primaryRole": "Основная роль",
+    "primaryRoleHint": "Укажите одну основную компетенцию — её видно в первую очередь.",
+    "continue": "Продолжить",
+    "roles": {
+      "developer": "Разработчик",
+      "designer": "Дизайнер",
+      "pm": "Менеджер продукта / проекта",
+      "qa": "Тестирование (QA)",
+      "analyst": "Аналитик",
+      "devops": "DevOps / SRE",
+      "tech_lead": "Тимлид / техлид"
+    }
+  },
   "board": {
     "envHintLoad": "Укажите VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env для загрузки досок из Supabase.",
     "loadingBoard": "Загрузка доски…",
@@ -163,7 +186,14 @@
     "searchStart": "Начните вводить запрос",
     "dangerZone": "Опасная зона",
     "dangerDesc": "Удаление доски необратимо: колонки и задачи будут удалены вместе с доской.",
-    "deleteBoard": "Удалить доску"
+    "deleteBoard": "Удалить доску",
+    "invitePickRoleTitle": "Роль на этой доске",
+    "invitePickRoleHint": "Выберите одну компетенцию пользователя — так он будет отображаться на доске.",
+    "inviteBack": "Назад к поиску",
+    "inviteConfirm": "Добавить на доску",
+    "inviteNoCompetencies": "У этого пользователя не заполнены компетенции в профиле. Попросите его указать роли в настройках аккаунта.",
+    "invitePrimaryBadge": "основная",
+    "memberBoardRole": "На доске: {{role}}"
   },
   "sidebar": {
     "supabaseKeys": "Укажите ключи Supabase в .env, чтобы загрузить доски.",
@@ -213,6 +243,8 @@
     "createTaskFailed": "Не удалось создать задачу",
     "noBoard": "Нет доски",
     "needAuth": "Нужна авторизация",
+    "boardMemberNoCompetencies": "У пользователя нет компетенций в профиле — добавление на доску невозможно.",
+    "boardMemberRoleInvalid": "Выбранная роль не входит в компетенции этого пользователя.",
     "invalidTaskOrder": "Некорректный порядок: задача встречается дважды",
     "invalidTaskData": "Некорректные данные задачи. Обновите страницу.",
     "taskBreakdownApiNotConfigured": "Укажите VITE_TASK_BREAKDOWN_API_URL в .env для разбиения задач.",
@@ -234,6 +266,12 @@
     "assigneePickFromBoard": "Выберите участника из списка доски",
     "emailInvalid": "Введите корректный email",
     "passwordMin": "Пароль не короче 8 символов",
-    "nameMin": "Имя не короче 2 символов"
+    "nameMin": "Имя не короче 2 символов",
+    "competenciesMinOne": "Выберите хотя бы одну роль",
+    "competenciesMax5": "Можно выбрать не больше 5 ролей",
+    "competenciesUnique": "Роли не должны повторяться",
+    "competenciesInvalid": "Выбрана роль вне справочника",
+    "competenciesPrimaryRequired": "Укажите основную роль",
+    "competenciesPrimaryMustBeSelected": "Основная роль должна быть среди выбранных"
   }
 }

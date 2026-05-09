@@ -263,6 +263,8 @@ export function BoardKanbanView({
   } | null>(null)
 
   const assigneeOptions: TaskAssigneeOption[] = useMemo(() => {
+    const withBoardRole = (name: string, slug: string | undefined) =>
+      slug ? `${name} · ${t(`competencies.roles.${slug}`)}` : name
     const opts: TaskAssigneeOption[] = []
     const ownerLabel =
       ownerProfile?.display_name?.trim() || ownerProfile?.email?.trim() || t('board.roleOwner')
@@ -271,15 +273,19 @@ export function BoardKanbanView({
       if (m.user_id === boardOwnerId) continue
       const p = m.profiles
       const label = p?.display_name?.trim() || p?.email?.trim() || m.user_id
-      opts.push({ value: m.user_id, label })
+      const slug = m.competency_roles?.slug
+      opts.push({ value: m.user_id, label: withBoardRole(label, slug) })
     }
     return opts
   }, [boardOwnerId, ownerProfile, members, t])
 
   const assigneePreviewById = useMemo(() => {
+    const withBoardRole = (name: string, slug: string | undefined) =>
+      slug ? `${name} · ${t(`competencies.roles.${slug}`)}` : name
     const map = new Map<string, AssigneePreview>()
-    const put = (userId: string, labelRaw: string) => {
-      const label = labelRaw.trim() || t('board.roleMember')
+    const put = (userId: string, labelRaw: string, slug?: string | undefined) => {
+      const decorated = withBoardRole(labelRaw.trim() || t('board.roleMember'), slug)
+      const label = decorated.trim() || t('board.roleMember')
       map.set(userId, {
         label,
         initials: initialsFromLabel(label),
@@ -289,7 +295,11 @@ export function BoardKanbanView({
     put(boardOwnerId, ownerProfile?.display_name || ownerProfile?.email || t('board.roleOwner'))
     for (const m of members ?? []) {
       const p = m.profiles
-      put(m.user_id, p?.display_name || p?.email || m.user_id)
+      put(
+        m.user_id,
+        p?.display_name || p?.email || m.user_id,
+        m.competency_roles?.slug,
+      )
     }
     return map
   }, [boardOwnerId, ownerProfile, members, t])
@@ -331,6 +341,8 @@ export function BoardKanbanView({
   }, [displayColumnItems])
 
   const headerMembers = useMemo(() => {
+    const withBoardRole = (name: string, slug: string | undefined) =>
+      slug ? `${name} · ${t(`competencies.roles.${slug}`)}` : name
     const list: { userId: string; label: string }[] = [
       {
         userId: boardOwnerId,
@@ -341,9 +353,10 @@ export function BoardKanbanView({
     for (const m of members ?? []) {
       if (m.user_id === boardOwnerId) continue
       const p = m.profiles
+      const base = p?.display_name?.trim() || p?.email?.trim() || m.user_id
       list.push({
         userId: m.user_id,
-        label: p?.display_name?.trim() || p?.email?.trim() || m.user_id,
+        label: withBoardRole(base, m.competency_roles?.slug),
       })
     }
     return list.slice(0, 4)

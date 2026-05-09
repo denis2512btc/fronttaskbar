@@ -25,7 +25,9 @@
   },
   "settingsPage": {
     "title": "Settings",
-    "description": "Account and workspace settings will go here."
+    "description": "Account and workspace settings will go here.",
+    "competenciesSection": "Competencies and roles",
+    "competenciesSectionHint": "Choose up to five roles from the catalog. One must be primary."
   },
   "landing": {
     "heroTitle": "AI Task Board",
@@ -95,6 +97,27 @@
     "haveAccount": "Already have an account?",
     "googleSignInFailed": "Google sign-in failed"
   },
+  "competencies": {
+    "onboardingTitle": "Your competencies",
+    "onboardingSubtitle": "Pick up to 5 roles from the catalog. A primary role is required.",
+    "gateLoading": "Checking your profile…",
+    "gateErrorHint": "Run SQL from supabase/migrations in the Supabase SQL Editor, or use supabase db push.",
+    "catalogEmpty": "Role catalog is unavailable. Check Supabase connection and migrations.",
+    "pickRoles": "Roles",
+    "pickRolesHint": "Select up to five roles that fit you.",
+    "primaryRole": "Primary role",
+    "primaryRoleHint": "Choose one primary competency — it is highlighted first.",
+    "continue": "Continue",
+    "roles": {
+      "developer": "Developer",
+      "designer": "Designer",
+      "pm": "Product / project manager",
+      "qa": "QA engineer",
+      "analyst": "Analyst",
+      "devops": "DevOps / SRE",
+      "tech_lead": "Tech lead"
+    }
+  },
   "board": {
     "envHintLoad": "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env to load boards from Supabase.",
     "loadingBoard": "Loading board…",
@@ -163,7 +186,14 @@
     "searchStart": "Start typing to search",
     "dangerZone": "Danger zone",
     "dangerDesc": "Deleting a board is irreversible: columns and tasks will be deleted with the board.",
-    "deleteBoard": "Delete board"
+    "deleteBoard": "Delete board",
+    "invitePickRoleTitle": "Role on this board",
+    "invitePickRoleHint": "Pick one of the user’s competencies — that’s how they’ll appear on this board.",
+    "inviteBack": "Back to search",
+    "inviteConfirm": "Add to board",
+    "inviteNoCompetencies": "This user hasn’t set competencies in their profile. Ask them to add roles in account settings.",
+    "invitePrimaryBadge": "primary",
+    "memberBoardRole": "On board: {{role}}"
   },
   "sidebar": {
     "supabaseKeys": "Add Supabase keys in .env to load boards.",
@@ -213,6 +243,8 @@
     "createTaskFailed": "Could not create task",
     "noBoard": "No board",
     "needAuth": "Sign-in required",
+    "boardMemberNoCompetencies": "This user has no competencies in their profile — they cannot be added to the board.",
+    "boardMemberRoleInvalid": "The selected role is not among this user’s competencies.",
     "invalidTaskOrder": "Invalid order: a task appears twice",
     "invalidTaskData": "Invalid task data. Refresh the page.",
     "taskBreakdownApiNotConfigured": "Set VITE_TASK_BREAKDOWN_API_URL in .env to break down tasks.",
@@ -234,6 +266,12 @@
     "assigneePickFromBoard": "Choose a member from the board list",
     "emailInvalid": "Enter a valid email",
     "passwordMin": "Password must be at least 8 characters",
-    "nameMin": "Name must be at least 2 characters"
+    "nameMin": "Name must be at least 2 characters",
+    "competenciesMinOne": "Select at least one role",
+    "competenciesMax5": "You can select at most 5 roles",
+    "competenciesUnique": "Roles must be unique",
+    "competenciesInvalid": "A role outside the catalog was selected",
+    "competenciesPrimaryRequired": "Choose a primary role",
+    "competenciesPrimaryMustBeSelected": "Primary role must be one of the selected roles"
   }
 }

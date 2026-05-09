@@ -25,7 +25,9 @@
   },
   "settingsPage": {
     "title": "Налады",
-    "description": "Тут з'явяцца налады ўліковага запісу і працоўнай прасторы."
+    "description": "Тут з'явяцца налады ўліковага запісу і працоўнай прасторы.",
+    "competenciesSection": "Кампетэнцыі і ролі",
+    "competenciesSectionHint": "Абярыце да пяці роляў са даведніка. Адна павінна быць асноўнай."
   },
   "landing": {
     "heroTitle": "AI Task Board",
@@ -95,6 +97,27 @@
     "haveAccount": "Ужо ёсць уліковы запіс?",
     "googleSignInFailed": "Не атрымалася ўвайсці праз Google"
   },
+  "competencies": {
+    "onboardingTitle": "Вашыя кампетэнцыі",
+    "onboardingSubtitle": "Абярыце да 5 роляў са даведніка. Асноўная роля абавязковая.",
+    "gateLoading": "Праверка профілю…",
+    "gateErrorHint": "Праверце міграцыі ў supabase/migrations і выканайце іх у SQL Editor або праз supabase db push.",
+    "catalogEmpty": "Даведнік роляў недаступны. Праверце падключэнне да Supabase і міграцыі.",
+    "pickRoles": "Ролі",
+    "pickRolesHint": "Адзінайце да пяці роляў, якія вам падыходзяць.",
+    "primaryRole": "Асноўная роля",
+    "primaryRoleHint": "Пакажыце адну асноўную кампетэнцыю — яна бачная першай.",
+    "continue": "Працягнуць",
+    "roles": {
+      "developer": "Распрацоўшчык",
+      "designer": "Дызайнер",
+      "pm": "Менеджар прадукту / праекта",
+      "qa": "Тэставанне (QA)",
+      "analyst": "Аналітык",
+      "devops": "DevOps / SRE",
+      "tech_lead": "Тымлід / тэхлід"
+    }
+  },
   "board": {
     "envHintLoad": "Укажыце VITE_SUPABASE_URL і VITE_SUPABASE_ANON_KEY у .env для загрузкі досак з Supabase.",
     "loadingBoard": "Загрузка дошкі…",
@@ -163,7 +186,14 @@
     "searchStart": "Пачніце ўводзіць запыт",
     "dangerZone": "Небяспечная зона",
     "dangerDesc": "Выдаленне дошкі незваротнае: калонкі і задачы будуць выдалены разам з дошкай.",
-    "deleteBoard": "Выдаліць дошку"
+    "deleteBoard": "Выдаліць дошку",
+    "invitePickRoleTitle": "Роля на гэтай дошцы",
+    "invitePickRoleHint": "Абярыце адну кампетэнцыю карыстальніка — так ён будзе бачны на дошцы.",
+    "inviteBack": "Назад да пошуку",
+    "inviteConfirm": "Дадаць на дошку",
+    "inviteNoCompetencies": "У гэтага карыстальніка не запоўнены кампетэнцыі. Папрасіце яго ўказаць ролі ў наладах.",
+    "invitePrimaryBadge": "асноўная",
+    "memberBoardRole": "На дошцы: {{role}}"
   },
   "sidebar": {
     "supabaseKeys": "Укажыце ключы Supabase у .env, каб загрузіць дошкі.",
@@ -213,6 +243,8 @@
     "createTaskFailed": "Не атрымалася стварыць задачу",
     "noBoard": "Няма дошкі",
     "needAuth": "Патрэбная аўтарызацыя",
+    "boardMemberNoCompetencies": "У карыстальніка няма кампетэнцый у профілі — дадаць на дошку немагчыма.",
+    "boardMemberRoleInvalid": "Абраная роля не ўваходзіць у кампетэнцыі гэтага карыстальніка.",
     "invalidTaskOrder": "Некарэктны парадак: задача сустракаецца двойчы",
     "invalidTaskData": "Некарэктныя даныя задачы. Абнавіце старонку.",
     "taskBreakdownApiNotConfigured": "Укажыце VITE_TASK_BREAKDOWN_API_URL у .env для разбіўкі задач.",
@@ -234,6 +266,12 @@
     "assigneePickFromBoard": "Выберыце ўдзельніка са спісу дошкі",
     "emailInvalid": "Увядзіце карэктны email",
     "passwordMin": "Пароль не карацейшы за 8 сімвалаў",
-    "nameMin": "Імя не карацейшае за 2 сімвалы"
+    "nameMin": "Імя не карацейшае за 2 сімвалы",
+    "competenciesMinOne": "Абярыце хаця б адну ролю",
+    "competenciesMax5": "Можна абраць не больш за 5 роляў",
+    "competenciesUnique": "Ролі не павінны паўтарацца",
+    "competenciesInvalid": "Абрана роля па-за даведнікам",
+    "competenciesPrimaryRequired": "Пакажыце асноўную ролю",
+    "competenciesPrimaryMustBeSelected": "Асноўная роля павінна быць сярод абраных"
   }
 }
