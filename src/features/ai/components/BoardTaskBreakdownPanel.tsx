@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Loader2, Send, Sparkles } from 'lucide-react'
 import {
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 import { requestTaskBreakdown, getTaskBreakdownApiUrl } from '@/features/ai/api/task-breakdown'
+import { insertTaskBreakdownPrompt } from '@/features/ai/api/task-breakdown-prompt'
 import { useCreateBoardTasksBatchMutation } from '@/features/boards/hooks/use-board-kanban-queries'
 
 export interface BoardTaskBreakdownPanelProps {
@@ -30,7 +31,6 @@ export function BoardTaskBreakdownPanel({
   const [taskText, setTaskText] = useState('')
   const [pickedColumnId, setPickedColumnId] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [successCount, setSuccessCount] = useState<number | null>(null)
   const [phase, setPhase] = useState<'idle' | 'api' | 'db'>('idle')
 
   const sortedColumns = useMemo(
@@ -50,12 +50,6 @@ export function BoardTaskBreakdownPanel({
   const apiConfigured = Boolean(getTaskBreakdownApiUrl())
   const hasColumns = sortedColumns.length > 0
 
-  useEffect(() => {
-    if (successCount === null) return
-    const tmr = window.setTimeout(() => setSuccessCount(null), 5000)
-    return () => window.clearTimeout(tmr)
-  }, [successCount])
-
   const canSubmit =
     hasColumns &&
     isSupabaseConfigured &&
@@ -68,18 +62,20 @@ export function BoardTaskBreakdownPanel({
     e.preventDefault()
     if (!canSubmit) return
     setError(null)
-    setSuccessCount(null)
+    const promptText = taskText.trim()
     try {
       setPhase('api')
-      const items = await requestTaskBreakdown(taskText)
+      const items = await requestTaskBreakdown(promptText)
       setPhase('db')
+      const promptId = await insertTaskBreakdownPrompt({ boardId, promptText })
       await batchMutation.mutateAsync({
         columnId: effectiveColumnId,
         items,
         assigneeId: null,
+        breakdownPromptId: promptId,
       })
-      setSuccessCount(items.length)
       setTaskText('')
+      onOpenChange(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : t('board.saveCardError'))
     } finally {
@@ -151,12 +147,6 @@ export function BoardTaskBreakdownPanel({
               {error}
             </p>
           )}
-          {successCount !== null && (
-            <p className="text-xs text-emerald-600 dark:text-emerald-400">
-              {t('board.taskBreakdownSuccess', { count: successCount })}
-            </p>
-          )}
-
           <Button type="submit" disabled={!canSubmit} className="w-full gap-2 sm:w-auto">
             {phase === 'idle' ?
               <>

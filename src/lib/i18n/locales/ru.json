@@ -239,7 +239,8 @@
     "newDesc": "Задайте поля карточки. Данные сохраняются в Supabase.",
     "deleteConfirmTitle": "Удалить карточку?",
     "deleteConfirmDesc": "Карточку «{{title}}» нельзя будет восстановить.",
-    "createCard": "Создать карточку"
+    "createCard": "Создать карточку",
+    "aiSourcePromptLabel": "Исходный запрос (разбиение ИИ)"
   },
   "errors": {
     "supabaseNotConfigured": "Supabase не настроен. Укажите VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env.",

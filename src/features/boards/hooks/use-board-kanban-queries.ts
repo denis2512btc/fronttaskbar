@@ -112,6 +112,7 @@ export function useCreateBoardTasksBatchMutation(boardId: string | undefined) {
       columnId: string
       items: { title: string; description: string; color: string }[]
       assigneeId: string | null
+      breakdownPromptId?: string | null
     }) => {
       if (!boardId) throw new Error(i18n.t('errors.noBoard'))
       return createBoardTasksBatch({
@@ -119,6 +120,7 @@ export function useCreateBoardTasksBatchMutation(boardId: string | undefined) {
         columnId: input.columnId,
         items: input.items,
         assigneeId: input.assigneeId,
+        breakdownPromptId: input.breakdownPromptId,
       })
     },
     onSuccess: async () => {

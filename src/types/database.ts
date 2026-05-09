@@ -195,6 +195,7 @@ export interface Database {
           description: string
           color: string
           assignee_id: string | null
+          breakdown_prompt_id: string | null
           position: number
           created_at: string
           updated_at: string
@@ -207,6 +208,7 @@ export interface Database {
           description?: string
           color: string
           assignee_id?: string | null
+          breakdown_prompt_id?: string | null
           position?: number
           created_at?: string
           updated_at?: string
@@ -219,6 +221,7 @@ export interface Database {
           description?: string
           color?: string
           assignee_id?: string | null
+          breakdown_prompt_id?: string | null
           position?: number
           created_at?: string
           updated_at?: string
@@ -241,6 +244,52 @@ export interface Database {
           {
             foreignKeyName: 'tasks_assignee_id_fkey'
             columns: ['assignee_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'tasks_breakdown_prompt_id_fkey'
+            columns: ['breakdown_prompt_id']
+            isOneToOne: false
+            referencedRelation: 'board_task_breakdown_prompts'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      board_task_breakdown_prompts: {
+        Row: {
+          id: string
+          board_id: string
+          user_id: string
+          prompt_text: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          board_id: string
+          user_id: string
+          prompt_text: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          board_id?: string
+          user_id?: string
+          prompt_text?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'board_task_breakdown_prompts_board_id_fkey'
+            columns: ['board_id']
+            isOneToOne: false
+            referencedRelation: 'boards'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'board_task_breakdown_prompts_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'profiles'
             referencedColumns: ['id']

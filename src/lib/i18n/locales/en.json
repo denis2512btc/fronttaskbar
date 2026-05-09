@@ -239,7 +239,8 @@
     "newDesc": "Fill in the card fields. Data is saved to Supabase.",
     "deleteConfirmTitle": "Delete card?",
     "deleteConfirmDesc": "Card “{{title}}” cannot be recovered.",
-    "createCard": "Create card"
+    "createCard": "Create card",
+    "aiSourcePromptLabel": "Original request (AI breakdown)"
   },
   "errors": {
     "supabaseNotConfigured": "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.",

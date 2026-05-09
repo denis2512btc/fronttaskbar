@@ -55,6 +55,7 @@ import {
   type TaskCardDraft,
   type TaskAssigneeOption,
 } from '@/features/tasks/components/TaskCardDialog'
+import { TaskAiSourceHint } from '@/features/tasks/components/TaskAiSourceHint'
 import { TASK_CARD_LEFT_BORDER } from '@/features/tasks/constants/task-card-accent'
 
 type KanbanColumnWithTasks = KanbanColumnFromApi & { tasks: KanbanTaskFromApi[] }
@@ -146,7 +147,15 @@ function TaskCard({
         leftBorder,
       )}
     >
-      <p className="text-sm font-medium leading-snug text-foreground">{task.title}</p>
+      <div className="flex items-start gap-2">
+        <p className="flex-1 text-sm font-medium leading-snug text-foreground">{task.title}</p>
+        {task.breakdownPromptText ?
+          <TaskAiSourceHint
+            promptText={task.breakdownPromptText}
+            label={t('task.aiSourcePromptLabel')}
+          />
+        : null}
+      </div>
       {task.description.length > 0 && (
         <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-muted-foreground">
           {task.description}

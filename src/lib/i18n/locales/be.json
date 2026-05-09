@@ -239,7 +239,8 @@
     "newDesc": "Задайце палі карткі. Даныя захоўваюцца ў Supabase.",
     "deleteConfirmTitle": "Выдаліць картку?",
     "deleteConfirmDesc": "Картку «{{title}}» нельга будзе аднавіць.",
-    "createCard": "Стварыць картку"
+    "createCard": "Стварыць картку",
+    "aiSourcePromptLabel": "Зыходны запыт (разбіццё AI)"
   },
   "errors": {
     "supabaseNotConfigured": "Supabase не наладжаны. Укажыце VITE_SUPABASE_URL і VITE_SUPABASE_ANON_KEY у .env.",

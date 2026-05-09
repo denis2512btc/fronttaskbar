@@ -31,9 +31,19 @@ export interface KanbanTaskFromApi {
   position: number
   createdAt: string
   updatedAt: string
+  breakdownPromptText: string | null
 }
 
-export function mapTaskRow(row: TaskRow): KanbanTaskFromApi {
+type TaskFetchRow = TaskRow & {
+  board_task_breakdown_prompts?: { prompt_text: string } | null
+}
+
+function nestedBreakdownPromptText(row: TaskFetchRow): string | null {
+  const nested = row.board_task_breakdown_prompts
+  return nested && typeof nested.prompt_text === 'string' ? nested.prompt_text : null
+}
+
+export function mapTaskRow(row: TaskFetchRow): KanbanTaskFromApi {
   return {
     id: row.id,
     boardId: row.board_id,
@@ -45,6 +55,7 @@ export function mapTaskRow(row: TaskRow): KanbanTaskFromApi {
     position: row.position,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    breakdownPromptText: nestedBreakdownPromptText(row),
   }
 }
 
@@ -52,14 +63,14 @@ export async function fetchBoardTasks(boardId: string): Promise<KanbanTaskFromAp
   ensureConfigured()
   const { data, error } = await supabase
     .from('tasks')
-    .select('*')
+    .select('*, board_task_breakdown_prompts(prompt_text)')
     .eq('board_id', boardId)
     .order('column_id', { ascending: true })
     .order('position', { ascending: true })
     .order('created_at', { ascending: true })
 
   if (error) throw new Error(error.message)
-  return (data ?? []).map((row) => mapTaskRow(row as TaskRow))
+  return (data ?? []).map((row) => mapTaskRow(row as TaskFetchRow))
 }
 
 export async function getNextTaskPosition(columnId: string): Promise<number> {
@@ -84,6 +95,7 @@ export async function createBoardTask(params: {
   description: string
   color: string
   assigneeId: string | null
+  breakdownPromptId?: string | null
 }): Promise<KanbanTaskFromApi> {
   ensureConfigured()
   const position = await getNextTaskPosition(params.columnId)
@@ -97,6 +109,7 @@ export async function createBoardTask(params: {
       color: params.color,
       assignee_id: params.assigneeId,
       position,
+      breakdown_prompt_id: params.breakdownPromptId ?? null,
     })
     .select('*')
     .single()
@@ -111,10 +124,12 @@ export async function createBoardTasksBatch(params: {
   columnId: string
   items: { title: string; description: string; color: string }[]
   assigneeId: string | null
+  breakdownPromptId?: string | null
 }): Promise<KanbanTaskFromApi[]> {
   ensureConfigured()
   if (params.items.length === 0) return []
 
+  const promptId = params.breakdownPromptId ?? null
   const start = await getNextTaskPosition(params.columnId)
   const rows = params.items.map((item, i) => ({
     board_id: params.boardId,
@@ -124,6 +139,7 @@ export async function createBoardTasksBatch(params: {
     color: apiColorToColumnPreset(item.color),
     assignee_id: params.assigneeId,
     position: start + i,
+    breakdown_prompt_id: promptId,
   }))
 
   const { data, error } = await supabase.from('tasks').insert(rows).select('*')
