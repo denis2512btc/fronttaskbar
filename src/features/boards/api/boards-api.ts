@@ -144,7 +144,10 @@ export async function createBoard(params: {
     .select('id')
     .single()
 
-  if (error) throw new Error(error.message)
+  if (error) {
+    if (error.code === '23505') throw new Error(i18n.t('errors.boardTitleNotUnique'))
+    throw new Error(error.message)
+  }
   if (!data) throw new Error(i18n.t('errors.createBoardFailed'))
 
   const { error: memberErr } = await supabase.from('board_members').insert({

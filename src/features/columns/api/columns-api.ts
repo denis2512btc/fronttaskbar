@@ -67,6 +67,22 @@ export async function getNextColumnPosition(boardId: string): Promise<number> {
   return typeof max === 'number' ? max + 1 : 0
 }
 
+export async function createBoardColumnsBatch(params: {
+  boardId: string
+  columns: { title: string; color: string }[]
+}): Promise<void> {
+  if (params.columns.length === 0) return
+  ensureConfigured()
+  const rows = params.columns.map((c, i) => ({
+    board_id: params.boardId,
+    title: c.title.trim(),
+    color: normalizeColumnColor(c.color),
+    position: i,
+  }))
+  const { error } = await supabase.from('board_columns').insert(rows)
+  if (error) throw new Error(error.message)
+}
+
 export async function createBoardColumn(params: {
   boardId: string
   title: string

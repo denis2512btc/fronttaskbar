@@ -13,6 +13,11 @@ import {
   removeBoardMember,
   searchProfiles,
 } from '@/features/boards/api/boards-api'
+import {
+  resolveBoardColumnTemplateForInsert,
+  type BoardColumnTemplateId,
+} from '@/features/boards/constants/board-column-templates'
+import { createBoardColumnsBatch } from '@/features/columns/api/columns-api'
 
 export const boardQueryKeys = {
   list: (userId: string) => ['boards', userId] as const,
@@ -69,13 +74,26 @@ export function useCreateBoardMutation(ownerId: string | undefined) {
   const navigate = useNavigate()
 
   return useMutation({
-    mutationFn: (input: { title: string; competencyRoleId: string }) => {
+    mutationFn: async (input: {
+      title: string
+      competencyRoleId: string
+      columnTemplateId: BoardColumnTemplateId
+    }) => {
       if (!ownerId) throw new Error(i18n.t('errors.needAuth'))
-      return createBoard({
+      const result = await createBoard({
         title: input.title,
         ownerId,
         competencyRoleId: input.competencyRoleId,
       })
+      const columns = resolveBoardColumnTemplateForInsert(input.columnTemplateId, i18n.t.bind(i18n))
+      if (columns.length === 0) return result
+      try {
+        await createBoardColumnsBatch({ boardId: result.id, columns })
+      } catch (err) {
+        await deleteBoard(result.id)
+        throw err
+      }
+      return result
     },
     onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey: ['boards'] })

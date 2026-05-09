@@ -153,6 +153,45 @@
     "supabaseHint": "Укажыце VITE_SUPABASE_URL і VITE_SUPABASE_ANON_KEY у .env, каб ствараць дошкі.",
     "nameLabel": "Назва",
     "placeholder": "Напрыклад, Product Roadmap",
+    "columnTemplateLabel": "Размяшчэнне калонак",
+    "columnTemplateHint": "Пачатковыя калонкі пад ваш працэс. Пазней іх можна перайменаваць або дадаць новыя.",
+    "columnTemplates": {
+      "empty": {
+        "label": "Пустая дошка",
+        "description": "Без калонак — дадайце самі."
+      },
+      "classic": {
+        "label": "Класічны Kanban",
+        "description": "Тры этапы: бэклог, у працы, гатова.",
+        "columns": {
+          "todo": "Да выканання",
+          "inProgress": "У працы",
+          "done": "Гатова"
+        }
+      },
+      "delivery": {
+        "label": "Пастаўка / распрацоўка",
+        "description": "Поўны цыкл: аналіз, паўза, тэсціраванне.",
+        "columns": {
+          "todo": "Да выканання",
+          "analysis": "Аналіз",
+          "inProgress": "У працы",
+          "onHold": "Паўза",
+          "testing": "Тэсціраванне",
+          "done": "Гатова"
+        }
+      },
+      "support": {
+        "label": "Падтрымка",
+        "description": "Заяўкі ад паступлення да рашэння.",
+        "columns": {
+          "new": "Новыя",
+          "inProgress": "У працы",
+          "waiting": "Чаканне",
+          "resolved": "Вырашана"
+        }
+      }
+    },
     "competencyLabel": "Ваша кампетэнцыя на дошцы",
     "competencyHint": "Так вы будзеце адлюстроўвацца на дошцы для іншых (як роля ўдзельніка).",
     "competencyLoading": "Загрузка вашых кампетэнцый…",
@@ -245,6 +284,7 @@
   "errors": {
     "supabaseNotConfigured": "Supabase не наладжаны. Укажыце VITE_SUPABASE_URL і VITE_SUPABASE_ANON_KEY у .env.",
     "createBoardFailed": "Не атрымалася стварыць дошку",
+    "boardTitleNotUnique": "Такая назва дошкі ўжо занята. Абярыце іншую.",
     "createColumnFailed": "Не атрымалася стварыць калонку",
     "createTaskFailed": "Не атрымалася стварыць задачу",
     "noBoard": "Няма дошкі",

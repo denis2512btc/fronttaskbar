@@ -15,15 +15,20 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { createBoardFormSchema, type CreateBoardFormInput } from '@/lib/validations/board'
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session'
+import { BOARD_COLUMN_TEMPLATE_IDS } from '@/features/boards/constants/board-column-templates'
 import { useCreateBoardMutation } from '@/features/boards/hooks/use-boards-queries'
 import { useProfileCompetencyRolesQuery } from '@/features/competencies/hooks/use-competencies-queries'
-import { useUIStore } from '@/stores/ui.store'
+import { createBoardFormSchema, type CreateBoardFormInput } from '@/lib/validations/board'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
+import { useUIStore } from '@/stores/ui.store'
 
-const emptyForm: CreateBoardFormInput = { title: '', competencyRoleId: '' }
+const emptyForm: CreateBoardFormInput = {
+  title: '',
+  competencyRoleId: '',
+  columnTemplateId: 'classic',
+}
 
 export function CreateBoardDialog() {
   const { t } = useTranslation()
@@ -80,6 +85,7 @@ export function CreateBoardDialog() {
       await createMutation.mutateAsync({
         title: input.title.trim(),
         competencyRoleId: input.competencyRoleId,
+        columnTemplateId: input.columnTemplateId,
       })
       setCreateBoardDialogOpen(false)
       reset(emptyForm)
@@ -103,7 +109,7 @@ export function CreateBoardDialog() {
 
   return (
     <Dialog open={createBoardDialogOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <span className="mb-1 flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600">
             <KanbanSquare className="size-4 text-white" strokeWidth={2} />
@@ -132,6 +138,46 @@ export function CreateBoardDialog() {
             {errors.title && (
               <p className="text-xs text-destructive">{errors.title.message}</p>
             )}
+          </div>
+
+          <div className="flex flex-col gap-2" role="group" aria-labelledby={`${baseId}-template-legend`}>
+            <div>
+              <p id={`${baseId}-template-legend`} className="text-base font-medium">
+                {t('boardCreate.columnTemplateLabel')}
+              </p>
+              <p className="text-sm text-muted-foreground">{t('boardCreate.columnTemplateHint')}</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              {BOARD_COLUMN_TEMPLATE_IDS.map((tid) => (
+                <label
+                  key={tid}
+                  className={cn(
+                    'flex cursor-pointer flex-col gap-0.5 rounded-lg border border-border/60 bg-card px-3 py-2',
+                    submitBlockedBase && 'pointer-events-none opacity-60',
+                  )}
+                >
+                  <span className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      value={tid}
+                      disabled={submitBlockedBase}
+                      className="size-4 shrink-0 border-input text-indigo-600"
+                      aria-invalid={!!errors.columnTemplateId}
+                      {...register('columnTemplateId')}
+                    />
+                    <span className="text-sm font-medium">
+                      {t(`boardCreate.columnTemplates.${tid}.label`)}
+                    </span>
+                  </span>
+                  <span className="pl-7 text-xs text-muted-foreground">
+                    {t(`boardCreate.columnTemplates.${tid}.description`)}
+                  </span>
+                </label>
+              ))}
+              {errors.columnTemplateId && (
+                <p className="text-xs text-destructive">{errors.columnTemplateId.message}</p>
+              )}
+            </div>
           </div>
 
           {competencySectionEnabled ? (

@@ -153,6 +153,45 @@
     "supabaseHint": "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env to create boards.",
     "nameLabel": "Title",
     "placeholder": "e.g. Product Roadmap",
+    "columnTemplateLabel": "Column layout",
+    "columnTemplateHint": "Starter columns for your workflow. You can rename or add columns later.",
+    "columnTemplates": {
+      "empty": {
+        "label": "Empty board",
+        "description": "No columns — add your own."
+      },
+      "classic": {
+        "label": "Classic Kanban",
+        "description": "Three stages: backlog, doing, done.",
+        "columns": {
+          "todo": "To Do",
+          "inProgress": "In Progress",
+          "done": "Done"
+        }
+      },
+      "delivery": {
+        "label": "Delivery / SDLC",
+        "description": "Full flow with analysis, pause, and testing.",
+        "columns": {
+          "todo": "To Do",
+          "analysis": "Analysis",
+          "inProgress": "In Progress",
+          "onHold": "On Hold",
+          "testing": "Testing",
+          "done": "Done"
+        }
+      },
+      "support": {
+        "label": "Support queue",
+        "description": "Tickets from intake to resolution.",
+        "columns": {
+          "new": "New",
+          "inProgress": "In Progress",
+          "waiting": "Waiting",
+          "resolved": "Resolved"
+        }
+      }
+    },
     "competencyLabel": "Your competency on this board",
     "competencyHint": "This is how you will appear to others on this board (same as member roles).",
     "competencyLoading": "Loading your competencies…",
@@ -245,6 +284,7 @@
   "errors": {
     "supabaseNotConfigured": "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.",
     "createBoardFailed": "Could not create board",
+    "boardTitleNotUnique": "This board title is already taken. Choose another name.",
     "createColumnFailed": "Could not create column",
     "createTaskFailed": "Could not create task",
     "noBoard": "No board",

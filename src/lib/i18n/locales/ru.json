@@ -153,6 +153,45 @@
     "supabaseHint": "Укажите VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env, чтобы создавать доски.",
     "nameLabel": "Название",
     "placeholder": "Например, Product Roadmap",
+    "columnTemplateLabel": "Расположение колонок",
+    "columnTemplateHint": "Стартовые колонки под ваш процесс. Позже их можно переименовать или добавить новые.",
+    "columnTemplates": {
+      "empty": {
+        "label": "Пустая доска",
+        "description": "Без колонок — добавите сами."
+      },
+      "classic": {
+        "label": "Классический Kanban",
+        "description": "Три этапа: бэклог, в работе, готово.",
+        "columns": {
+          "todo": "К выполнению",
+          "inProgress": "В работе",
+          "done": "Готово"
+        }
+      },
+      "delivery": {
+        "label": "Поставка / разработка",
+        "description": "Полный цикл: анализ, пауза, тестирование.",
+        "columns": {
+          "todo": "К выполнению",
+          "analysis": "Анализ",
+          "inProgress": "В работе",
+          "onHold": "Пауза",
+          "testing": "Тестирование",
+          "done": "Готово"
+        }
+      },
+      "support": {
+        "label": "Поддержка",
+        "description": "Заявки от поступления до решения.",
+        "columns": {
+          "new": "Новые",
+          "inProgress": "В работе",
+          "waiting": "Ожидание",
+          "resolved": "Решено"
+        }
+      }
+    },
     "competencyLabel": "Ваша компетенция на доске",
     "competencyHint": "Так вы будете отображаться на доске для других (как роль участника).",
     "competencyLoading": "Загрузка ваших компетенций…",
@@ -245,6 +284,7 @@
   "errors": {
     "supabaseNotConfigured": "Supabase не настроен. Укажите VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env.",
     "createBoardFailed": "Не удалось создать доску",
+    "boardTitleNotUnique": "Такое название доски уже занято. Выберите другое.",
     "createColumnFailed": "Не удалось создать колонку",
     "createTaskFailed": "Не удалось создать задачу",
     "noBoard": "Нет доски",

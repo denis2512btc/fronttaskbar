@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import { z } from 'zod'
+import { BOARD_COLUMN_TEMPLATE_IDS } from '@/features/boards/constants/board-column-templates'
 
 export function createBoardFormSchema(t: TFunction) {
   return z.object({
@@ -10,6 +11,7 @@ export function createBoardFormSchema(t: TFunction) {
     competencyRoleId: z
       .string()
       .uuid(t('validation.boardCompetencyRequired')),
+    columnTemplateId: z.enum(BOARD_COLUMN_TEMPLATE_IDS),
   })
 }
 
