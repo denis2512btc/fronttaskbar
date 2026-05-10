@@ -145,7 +145,8 @@
     "taskBreakdownNeedColumn": "Спачатку дадайце калонку на дошку.",
     "taskBreakdownToggleExpand": "Разгарнуць панель разбіўкі",
     "taskBreakdownToggleCollapse": "Згарнуць панель",
-    "taskBreakdownColumnLabel": "Калонка"
+    "taskBreakdownColumnLabel": "Калонка",
+    "taskBreakdownMembersLoading": "Загрузка ўдзельнікаў дошкі…"
   },
   "boardCreate": {
     "title": "Новая дошка",
@@ -298,6 +299,7 @@
     "taskBreakdownHttpError": "Сервер разбіўкі адказаў з памылкай ({{status}})",
     "taskBreakdownInvalidResponse": "Некарэктны адказ сервера разбіўкі",
     "taskBreakdownEmptyItems": "Сервер не вярнуў падзадачы",
+    "taskBreakdownNoBoardMembers": "Няма ўдзельнікаў дошкі для адпраўкі ў запыт разбіўкі.",
     "createTasksBatchFailed": "Не атрымалася стварыць задачы на дошцы"
   },
   "validation": {

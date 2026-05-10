@@ -122,8 +122,12 @@ export async function createBoardTask(params: {
 export async function createBoardTasksBatch(params: {
   boardId: string
   columnId: string
-  items: { title: string; description: string; color: string }[]
-  assigneeId: string | null
+  items: {
+    title: string
+    description: string
+    color: string
+    assigneeId: string | null
+  }[]
   breakdownPromptId?: string | null
 }): Promise<KanbanTaskFromApi[]> {
   ensureConfigured()
@@ -137,7 +141,7 @@ export async function createBoardTasksBatch(params: {
     title: item.title.trim(),
     description: item.description,
     color: apiColorToColumnPreset(item.color),
-    assignee_id: params.assigneeId,
+    assignee_id: item.assigneeId,
     position: start + i,
     breakdown_prompt_id: promptId,
   }))

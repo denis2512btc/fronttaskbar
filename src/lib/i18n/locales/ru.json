@@ -145,7 +145,8 @@
     "taskBreakdownNeedColumn": "Сначала добавьте колонку на доску.",
     "taskBreakdownToggleExpand": "Развернуть панель разбиения",
     "taskBreakdownToggleCollapse": "Свернуть панель",
-    "taskBreakdownColumnLabel": "Колонка"
+    "taskBreakdownColumnLabel": "Колонка",
+    "taskBreakdownMembersLoading": "Загрузка участников доски…"
   },
   "boardCreate": {
     "title": "Новая доска",
@@ -298,6 +299,7 @@
     "taskBreakdownHttpError": "Сервер разбиения ответил с ошибкой ({{status}})",
     "taskBreakdownInvalidResponse": "Некорректный ответ сервера разбиения",
     "taskBreakdownEmptyItems": "Сервер не вернул подзадачи",
+    "taskBreakdownNoBoardMembers": "Нет участников доски для отправки в запросе разбиения.",
     "createTasksBatchFailed": "Не удалось создать задачи на доске"
   },
   "validation": {

@@ -10,13 +10,17 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
-import { requestTaskBreakdown, getTaskBreakdownApiUrl } from '@/features/ai/api/task-breakdown'
+import { requestTaskBreakdown, getTaskBreakdownApiUrl, type TaskBreakdownMemberPayload } from '@/features/ai/api/task-breakdown'
 import { insertTaskBreakdownPrompt } from '@/features/ai/api/task-breakdown-prompt'
 import { useCreateBoardTasksBatchMutation } from '@/features/boards/hooks/use-board-kanban-queries'
 
 export interface BoardTaskBreakdownPanelProps {
   boardId: string
   columns: { id: string; title: string; position: number }[]
+  /** Участники доски для POST разбиения (user_id + competency_role_id на доске). */
+  boardMembers: TaskBreakdownMemberPayload[]
+  /** Пока true — участники загружаются, отправка отключена. */
+  boardMembersLoading?: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -24,6 +28,8 @@ export interface BoardTaskBreakdownPanelProps {
 export function BoardTaskBreakdownPanel({
   boardId,
   columns,
+  boardMembers,
+  boardMembersLoading = false,
   open,
   onOpenChange,
 }: BoardTaskBreakdownPanelProps) {
@@ -49,6 +55,7 @@ export function BoardTaskBreakdownPanel({
   const batchMutation = useCreateBoardTasksBatchMutation(boardId)
   const apiConfigured = Boolean(getTaskBreakdownApiUrl())
   const hasColumns = sortedColumns.length > 0
+  const hasBoardMembers = boardMembers.length > 0
 
   const canSubmit =
     hasColumns &&
@@ -56,7 +63,9 @@ export function BoardTaskBreakdownPanel({
     apiConfigured &&
     Boolean(effectiveColumnId) &&
     taskText.trim().length > 0 &&
-    phase === 'idle'
+    phase === 'idle' &&
+    !boardMembersLoading &&
+    hasBoardMembers
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,13 +74,20 @@ export function BoardTaskBreakdownPanel({
     const promptText = taskText.trim()
     try {
       setPhase('api')
-      const items = await requestTaskBreakdown(promptText)
+      const items = await requestTaskBreakdown({
+        prompt: promptText,
+        members: boardMembers,
+      })
       setPhase('db')
       const promptId = await insertTaskBreakdownPrompt({ boardId, promptText })
       await batchMutation.mutateAsync({
         columnId: effectiveColumnId,
-        items,
-        assigneeId: null,
+        items: items.map((item) => ({
+          title: item.title,
+          description: item.description,
+          color: item.color,
+          assigneeId: item.assigneeId,
+        })),
         breakdownPromptId: promptId,
       })
       setTaskText('')
@@ -103,6 +119,15 @@ export function BoardTaskBreakdownPanel({
         )}
         {!hasColumns && isSupabaseConfigured && (
           <p className="text-xs text-muted-foreground">{t('board.taskBreakdownNeedColumn')}</p>
+        )}
+        {hasColumns &&
+          isSupabaseConfigured &&
+          !boardMembersLoading &&
+          !hasBoardMembers && (
+            <p className="text-xs text-destructive">{t('errors.taskBreakdownNoBoardMembers')}</p>
+          )}
+        {hasColumns && isSupabaseConfigured && boardMembersLoading && (
+          <p className="text-xs text-muted-foreground">{t('board.taskBreakdownMembersLoading')}</p>
         )}
 
         {hasColumns && (

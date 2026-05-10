@@ -110,8 +110,12 @@ export function useCreateBoardTasksBatchMutation(boardId: string | undefined) {
   return useMutation({
     mutationFn: (input: {
       columnId: string
-      items: { title: string; description: string; color: string }[]
-      assigneeId: string | null
+      items: {
+        title: string
+        description: string
+        color: string
+        assigneeId: string | null
+      }[]
       breakdownPromptId?: string | null
     }) => {
       if (!boardId) throw new Error(i18n.t('errors.noBoard'))
@@ -119,7 +123,6 @@ export function useCreateBoardTasksBatchMutation(boardId: string | undefined) {
         boardId,
         columnId: input.columnId,
         items: input.items,
-        assigneeId: input.assigneeId,
         breakdownPromptId: input.breakdownPromptId,
       })
     },

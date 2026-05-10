@@ -145,7 +145,8 @@
     "taskBreakdownNeedColumn": "Add a column to the board first.",
     "taskBreakdownToggleExpand": "Expand breakdown panel",
     "taskBreakdownToggleCollapse": "Collapse panel",
-    "taskBreakdownColumnLabel": "Column"
+    "taskBreakdownColumnLabel": "Column",
+    "taskBreakdownMembersLoading": "Loading board members…"
   },
   "boardCreate": {
     "title": "New board",
@@ -298,6 +299,7 @@
     "taskBreakdownHttpError": "Breakdown server returned an error ({{status}})",
     "taskBreakdownInvalidResponse": "Invalid breakdown server response",
     "taskBreakdownEmptyItems": "The server returned no subtasks",
+    "taskBreakdownNoBoardMembers": "There are no board members to send with the breakdown request.",
     "createTasksBatchFailed": "Could not create tasks on the board"
   },
   "validation": {

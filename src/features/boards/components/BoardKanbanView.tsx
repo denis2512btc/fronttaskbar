@@ -240,7 +240,16 @@ export function BoardKanbanView({
   const { user } = useAuthSession()
   const columnsQuery = useBoardColumnsQuery(boardId)
   const tasksQuery = useBoardTasksQuery(boardId)
-  const { data: members } = useBoardMembersQuery(boardId, true)
+  const { data: members, isPending: boardMembersLoading } = useBoardMembersQuery(boardId, true)
+  const boardMembersForBreakdown = useMemo(
+    () =>
+      (members ?? []).map((m) => ({
+        user_id: m.user_id,
+        competency_role_id: m.competency_role_id,
+      })),
+    [members],
+  )
+
   const { data: ownerProfile } = useOwnerProfileQuery(boardOwnerId, true)
 
   const ownerBoardRoleSlug = useMemo(() => {
@@ -949,6 +958,8 @@ export function BoardKanbanView({
       {!kanbanError && (
         <BoardTaskBreakdownPanel
           boardId={boardId}
+          boardMembers={boardMembersForBreakdown}
+          boardMembersLoading={boardMembersLoading}
           open={taskBreakdownOpen}
           onOpenChange={setTaskBreakdownOpen}
           columns={columnsWithTasks.map((c) => ({
