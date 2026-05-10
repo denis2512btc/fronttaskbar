@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import i18n from '@/lib/i18n/i18n'
 
+/** Must match `openRouterDevProxyPath` in `vite.config.ts` — dev-only same-origin proxy (Worker без CORS). */
+const OPENROUTER_DEV_PROXY_PATH = '/api/openrouter-proxy'
+
 const taskBreakdownItemSchema = z.object({
   title: z.string(),
   description: z.string(),
@@ -14,8 +17,10 @@ const taskBreakdownResponseSchema = z.object({
 export type TaskBreakdownItem = z.infer<typeof taskBreakdownItemSchema>
 
 export function getTaskBreakdownApiUrl(): string | null {
-  const raw = (import.meta.env.VITE_TASK_BREAKDOWN_API_URL as string | undefined)?.trim()
-  return raw || null
+  const raw = (import.meta.env.VITE_OPENROUTER_API_URL as string | undefined)?.trim()
+  if (!raw) return null
+  if (import.meta.env.DEV) return OPENROUTER_DEV_PROXY_PATH
+  return raw
 }
 
 export async function requestTaskBreakdown(task: string): Promise<TaskBreakdownItem[]> {
@@ -32,7 +37,7 @@ export async function requestTaskBreakdown(task: string): Promise<TaskBreakdownI
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ task: trimmed }),
+    body: JSON.stringify({ prompt: trimmed }),
   })
 
   if (!res.ok) {

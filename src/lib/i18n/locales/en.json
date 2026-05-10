@@ -293,7 +293,7 @@
     "boardMemberRoleInvalid": "The selected role is not among this user’s competencies.",
     "invalidTaskOrder": "Invalid order: a task appears twice",
     "invalidTaskData": "Invalid task data. Refresh the page.",
-    "taskBreakdownApiNotConfigured": "Set VITE_TASK_BREAKDOWN_API_URL in .env to break down tasks.",
+    "taskBreakdownApiNotConfigured": "Set VITE_OPENROUTER_API_URL in .env to break down tasks.",
     "taskBreakdownEmptyTask": "Enter a task description",
     "taskBreakdownHttpError": "Breakdown server returned an error ({{status}})",
     "taskBreakdownInvalidResponse": "Invalid breakdown server response",

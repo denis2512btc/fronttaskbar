@@ -51,13 +51,13 @@
 
 **Сделано:**
 
-- Переменная окружения **`VITE_TASK_BREAKDOWN_API_URL`** — полный URL эндпоинта (см. [`.env.example`](../.env.example)). Тело запроса: `POST` JSON `{"task": "<текст>"}`. Ответ: `{ "items": [ { "title", "description", "color" }, ... ] }` (проверка через Zod).
+- Переменная окружения **`VITE_OPENROUTER_API_URL`** — полный URL эндпоинта (Worker/OpenRouter), см. [`.env.example`](../.env.example). Тело запроса: `POST` JSON `{"prompt": "<текст>"}`. Ответ: `{ "items": [ { "title", "description", "color" }, ... ] }` (проверка через Zod).
 - [`src/features/ai/api/task-breakdown.ts`](../src/features/ai/api/task-breakdown.ts) — `requestTaskBreakdown`, `getTaskBreakdownApiUrl`.
 - Цвет из API часто приходит как hex (`#3b82f6`); в БД и UI карточки используются только Tailwind-пресеты колонок/карточек. Сопоставление: [`src/features/tasks/utils/api-color-to-preset.ts`](../src/features/tasks/utils/api-color-to-preset.ts) (`apiColorToColumnPreset`).
 - Пакетная вставка: [`createBoardTasksBatch`](../src/features/tasks/api/tasks-api.ts) — один `insert` нескольких строк с корректными `position`; хук [`useCreateBoardTasksBatchMutation`](../src/features/boards/hooks/use-board-kanban-queries.ts).
 - UI: [`BoardTaskBreakdownPanel`](../src/features/ai/components/BoardTaskBreakdownPanel.tsx) (fixed, сворачивание), подключён в [`BoardKanbanView`](../src/features/boards/components/BoardKanbanView.tsx). i18n: ключи `board.taskBreakdown*` и `errors.taskBreakdown*` / `errors.createTasksBatchFailed`.
 
-**Заметки:** На стороне бэкенда нужен **CORS** для origin фронта. Без `VITE_TASK_BREAKDOWN_API_URL` кнопка отправки недоступна (подсказка в панели).
+**Заметки:** На стороне бэкенда нужен **CORS** для origin фронта. Без `VITE_OPENROUTER_API_URL` кнопка отправки недоступна (подсказка в панели).
 
 ---
 

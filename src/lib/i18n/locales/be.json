@@ -293,7 +293,7 @@
     "boardMemberRoleInvalid": "Абраная роля не ўваходзіць у кампетэнцыі гэтага карыстальніка.",
     "invalidTaskOrder": "Некарэктны парадак: задача сустракаецца двойчы",
     "invalidTaskData": "Некарэктныя даныя задачы. Абнавіце старонку.",
-    "taskBreakdownApiNotConfigured": "Укажыце VITE_TASK_BREAKDOWN_API_URL у .env для разбіўкі задач.",
+    "taskBreakdownApiNotConfigured": "Укажыце VITE_OPENROUTER_API_URL у .env для разбіўкі задач.",
     "taskBreakdownEmptyTask": "Увядзіце тэкст задачы",
     "taskBreakdownHttpError": "Сервер разбіўкі адказаў з памылкай ({{status}})",
     "taskBreakdownInvalidResponse": "Некарэктны адказ сервера разбіўкі",

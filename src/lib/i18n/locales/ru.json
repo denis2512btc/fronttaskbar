@@ -293,7 +293,7 @@
     "boardMemberRoleInvalid": "Выбранная роль не входит в компетенции этого пользователя.",
     "invalidTaskOrder": "Некорректный порядок: задача встречается дважды",
     "invalidTaskData": "Некорректные данные задачи. Обновите страницу.",
-    "taskBreakdownApiNotConfigured": "Укажите VITE_TASK_BREAKDOWN_API_URL в .env для разбиения задач.",
+    "taskBreakdownApiNotConfigured": "Укажите VITE_OPENROUTER_API_URL в .env для разбиения задач.",
     "taskBreakdownEmptyTask": "Введите текст задачи",
     "taskBreakdownHttpError": "Сервер разбиения ответил с ошибкой ({{status}})",
     "taskBreakdownInvalidResponse": "Некорректный ответ сервера разбиения",
