@@ -13,7 +13,9 @@
     "newBoard": "Новая дошка",
     "settings": "Налады",
     "boardsSection": "Дошкі",
-    "language": "Мова"
+    "language": "Мова",
+    "userMenuAria": "Меню ўліковага запісу",
+    "userSettings": "Налады карыстальніка"
   },
   "dashboard": {
     "title": "Агляд",
@@ -27,7 +29,18 @@
     "title": "Налады",
     "description": "Тут з'явяцца налады ўліковага запісу і працоўнай прасторы.",
     "competenciesSection": "Кампетэнцыі і ролі",
-    "competenciesSectionHint": "Абярыце да пяці роляў са даведніка. Адна павінна быць асноўнай."
+    "competenciesSectionHint": "Абярыце да пяці роляў са даведніка. Адна павінна быць асноўнай.",
+    "telegramSection": "Карыстальнікі Telegram",
+    "telegramSectionHint": "Юзернеймы Telegram для вашага ўліковага запісу. Захоўваюцца ў Supabase і сінхранізуюцца паміж прыладамі.",
+    "telegram": {
+      "usernameLabel": "Юзернейм Telegram",
+      "placeholder": "username",
+      "privacyNotice": "Гэты спіс бачыце і змяняеце толькі вы — іншыя ўліковыя запісы не маюць доступу.",
+      "add": "Дадаць",
+      "remove": "Выдаліць",
+      "empty": "Пакуль нікога не дадалі.",
+      "duplicate": "Гэты юзернейм ужо ў спісе."
+    }
   },
   "landing": {
     "heroTitle": "AI Task Board",
@@ -321,6 +334,8 @@
     "competenciesUnique": "Ролі не павінны паўтарацца",
     "competenciesInvalid": "Абрана роля па-за даведнікам",
     "competenciesPrimaryRequired": "Пакажыце асноўную ролю",
-    "competenciesPrimaryMustBeSelected": "Асноўная роля павінна быць сярод абраных"
+    "competenciesPrimaryMustBeSelected": "Асноўная роля павінна быць сярод абраных",
+    "telegramUsernameRequired": "Увядзіце юзернейм Telegram",
+    "telegramUsernameInvalid": "5–32 сімвалы: лацінка, лічбы, падкрэсліванне"
   }
 }

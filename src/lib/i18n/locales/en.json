@@ -13,7 +13,9 @@
     "newBoard": "New board",
     "settings": "Settings",
     "boardsSection": "Boards",
-    "language": "Language"
+    "language": "Language",
+    "userMenuAria": "Account menu",
+    "userSettings": "User settings"
   },
   "dashboard": {
     "title": "Overview",
@@ -27,7 +29,18 @@
     "title": "Settings",
     "description": "Account and workspace settings will go here.",
     "competenciesSection": "Competencies and roles",
-    "competenciesSectionHint": "Choose up to five roles from the catalog. One must be primary."
+    "competenciesSectionHint": "Choose up to five roles from the catalog. One must be primary.",
+    "telegramSection": "Telegram users",
+    "telegramSectionHint": "Telegram usernames allowed for your account. Saved in Supabase and synced across devices.",
+    "telegram": {
+      "usernameLabel": "Telegram username",
+      "placeholder": "username",
+      "privacyNotice": "Only you can view and edit this list — other accounts cannot access your entries.",
+      "add": "Add",
+      "remove": "Remove",
+      "empty": "No Telegram users added yet.",
+      "duplicate": "This username is already in the list."
+    }
   },
   "landing": {
     "heroTitle": "AI Task Board",
@@ -321,6 +334,8 @@
     "competenciesUnique": "Roles must be unique",
     "competenciesInvalid": "A role outside the catalog was selected",
     "competenciesPrimaryRequired": "Choose a primary role",
-    "competenciesPrimaryMustBeSelected": "Primary role must be one of the selected roles"
+    "competenciesPrimaryMustBeSelected": "Primary role must be one of the selected roles",
+    "telegramUsernameRequired": "Enter a Telegram username",
+    "telegramUsernameInvalid": "Use 5–32 characters: Latin letters, digits, underscore"
   }
 }

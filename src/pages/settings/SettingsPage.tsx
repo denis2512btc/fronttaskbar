@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { PageContainer } from '@/components/shared/PageContainer'
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session'
 import { CompetenciesEditor } from '@/features/competencies/components/CompetenciesEditor'
+import { TelegramUsersSettings } from '@/features/telegram/components/TelegramUsersSettings'
 
 export function SettingsPage() {
   const { t } = useTranslation()
@@ -13,6 +14,8 @@ export function SettingsPage() {
       <p className="mt-2 text-muted-foreground">
         {t('settingsPage.description')}
       </p>
+
+      {user ? <TelegramUsersSettings userId={user.id} /> : null}
 
       {user ? (
         <section className="mt-10 rounded-xl border border-border/60 bg-card p-6 shadow-sm">

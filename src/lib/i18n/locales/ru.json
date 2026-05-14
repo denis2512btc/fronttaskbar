@@ -13,7 +13,9 @@
     "newBoard": "Новая доска",
     "settings": "Настройки",
     "boardsSection": "Доски",
-    "language": "Язык"
+    "language": "Язык",
+    "userMenuAria": "Меню аккаунта",
+    "userSettings": "Настройки пользователя"
   },
   "dashboard": {
     "title": "Обзор",
@@ -27,7 +29,18 @@
     "title": "Настройки",
     "description": "Здесь появятся настройки аккаунта и рабочего пространства.",
     "competenciesSection": "Компетенции и роли",
-    "competenciesSectionHint": "Выберите до пяти ролей из справочника. Одна должна быть основной."
+    "competenciesSectionHint": "Выберите до пяти ролей из справочника. Одна должна быть основной.",
+    "telegramSection": "Пользователи Telegram",
+    "telegramSectionHint": "Юзернеймы Telegram для вашего аккаунта. Хранятся в Supabase и синхронизируются между устройствами.",
+    "telegram": {
+      "usernameLabel": "Юзернейм Telegram",
+      "placeholder": "username",
+      "privacyNotice": "Этот список видите и меняете только вы — другие учётные записи к нему доступа не имеют.",
+      "add": "Добавить",
+      "remove": "Удалить",
+      "empty": "Пока никто не добавлен.",
+      "duplicate": "Этот юзернейм уже в списке."
+    }
   },
   "landing": {
     "heroTitle": "AI Task Board",
@@ -321,6 +334,8 @@
     "competenciesUnique": "Роли не должны повторяться",
     "competenciesInvalid": "Выбрана роль вне справочника",
     "competenciesPrimaryRequired": "Укажите основную роль",
-    "competenciesPrimaryMustBeSelected": "Основная роль должна быть среди выбранных"
+    "competenciesPrimaryMustBeSelected": "Основная роль должна быть среди выбранных",
+    "telegramUsernameRequired": "Введите юзернейм Telegram",
+    "telegramUsernameInvalid": "5–32 символа: латиница, цифры, подчёркивание"
   }
 }

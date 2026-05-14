@@ -108,6 +108,35 @@ export interface Database {
           },
         ]
       }
+      profile_telegram_usernames: {
+        Row: {
+          id: string
+          profile_id: string
+          username: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          username: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          username?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'profile_telegram_usernames_profile_id_fkey'
+            columns: ['profile_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       board_members: {
         Row: {
           board_id: string

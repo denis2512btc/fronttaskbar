@@ -1,7 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
-import { Moon, Sun, Zap, PanelLeftClose, PanelLeftOpen, Bell, Search, LogOut } from 'lucide-react'
+import {
+  Moon,
+  Sun,
+  Zap,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Bell,
+  Search,
+  LogOut,
+  Settings2,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { AuthDialog } from '@/features/auth/components/AuthDialog'
@@ -25,6 +35,8 @@ export function AppNavbar({
   const { t } = useTranslation()
   const SidebarIcon = sidebarOpen ? PanelLeftClose : PanelLeftOpen
   const { user, loading } = useAuthSession()
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
 
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
@@ -37,6 +49,24 @@ export function AppNavbar({
     setAuthMode('signup')
     setAuthOpen(true)
   }
+
+  useEffect(() => {
+    if (!userMenuOpen) return
+    const onDown = (e: MouseEvent) => {
+      const el = userMenuRef.current
+      if (!el || el.contains(e.target as Node)) return
+      setUserMenuOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setUserMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [userMenuOpen])
 
   const avatarLetter = user?.user_metadata?.name
     ? (user.user_metadata.name as string)[0].toUpperCase()
@@ -110,15 +140,38 @@ export function AppNavbar({
                   onClick={() => signOut()}
                   className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   title={t('common.signOut')}
+                  aria-label={t('common.signOut')}
                 >
                   <LogOut className="size-4" />
                 </button>
-                <button
-                  type="button"
-                  className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white"
-                >
-                  {avatarLetter}
-                </button>
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen((o) => !o)}
+                    className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white outline-none ring-offset-2 ring-offset-background focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    aria-expanded={userMenuOpen}
+                    aria-haspopup="menu"
+                    aria-label={t('layout.userMenuAria')}
+                  >
+                    {avatarLetter}
+                  </button>
+                  {userMenuOpen ? (
+                    <div
+                      role="menu"
+                      className="absolute right-0 top-[calc(100%+0.375rem)] z-[60] min-w-[12.5rem] rounded-xl border border-border/60 bg-card py-1 shadow-md"
+                    >
+                      <Link
+                        to="/settings#saas-telegram"
+                        role="menuitem"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted"
+                      >
+                        <Settings2 className="size-4 shrink-0 text-muted-foreground" />
+                        {t('layout.userSettings')}
+                      </Link>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-1.5">
